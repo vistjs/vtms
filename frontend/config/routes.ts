@@ -83,13 +83,6 @@
     ],
   },
   {
-    name: 'list.table-list',
-    icon: 'table',
-    layout: false,
-    path: '/list',
-    component: './TableList',
-  },
-  {
     path: '/',
     redirect: '/welcome',
   },

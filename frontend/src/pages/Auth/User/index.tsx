@@ -109,7 +109,7 @@ const User: React.FC = () => {
     {
       title: '名称',
       dataIndex: 'name',
-      valueType: 'text'
+      valueType: 'text',
     },
     {
       title: '角色',
@@ -167,7 +167,7 @@ const User: React.FC = () => {
     {
       title: '更新人',
       dataIndex: 'name',
-      valueType: 'text'
+      valueType: 'text',
     },
     {
       title: <FormattedMessage id="pages.searchTable.titleOption" defaultMessage="Operating" />,
@@ -181,7 +181,7 @@ const User: React.FC = () => {
             setCurrentRow(record);
           }}
         >
-          修改
+          编辑
         </a>,
         <a
           key="config"
@@ -191,7 +191,7 @@ const User: React.FC = () => {
           }}
         >
           删除
-        </a>
+        </a>,
       ],
     },
   ];
@@ -286,7 +286,6 @@ const User: React.FC = () => {
         />
         <ProFormTextArea width="md" name="desc" />
       </ModalForm>
-
     </PageContainer>
   );
 };

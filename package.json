@@ -1,15 +1,23 @@
 {
   "private": true,
   "scripts": {
+    "dev": "pnpm run dev -r --parallel",
+    "lint-staged:js": "eslint --ext .js,.jsx,.ts,.tsx ",
+    "prepare": "husky install",
+    "prettier": "prettier -c --write \"{frontend, server}/**/*\""
   },
-  "dependencies": {
+  "lint-staged": {
+    "**/*.{js,jsx,ts,tsx}": "npm run lint-staged:js",
+    "**/*.{js,jsx,tsx,ts,less,md,json}": [
+      "prettier --write"
+    ]
   },
+  "dependencies": {},
   "devDependencies": {
     "husky": "^8.0.1",
     "lint-staged": "^13.0.3",
     "prettier": "^2",
     "prettier-plugin-organize-imports": "^2",
-    "prettier-plugin-packagejson": "^2",
-    "typescript": "^4.1.2"
+    "prettier-plugin-packagejson": "^2"
   }
 }
