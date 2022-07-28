@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { PlusOutlined } from '@ant-design/icons';
 import { Button, Card, List, Typography } from 'antd';
-import { useRequest } from '@umijs/max';
+import { useRequest, request } from '@umijs/max';
 import { queryFakeList } from '@/services/ant-design-pro/api';
 import {
   ModalForm,
@@ -17,13 +17,28 @@ import styles from './style.less';
 const { Paragraph } = Typography;
 
 const CardList = () => {
-  const { data, loading } = useRequest(() => {
-    return queryFakeList({
-      count: 8,
-    });
+  const { data, run, loading } = useRequest(() => {
+    return request<Record<string, any>>('/api/v1/projects');
   });
 
+  const [updateVisible, setUpdateVisible] = useState(false);
+  const [editing, setEditing] = useState({});
+
   const list = data?.list || [];
+
+  const changeUpdate = (index: number) => {
+    setEditing(list[index - 1]);
+    setUpdateVisible(true);
+  };
+
+  const deleteItem = (seq: number) => {
+    return request<Record<string, any>>(`/api/v1/project/${seq}`, {
+      method: 'DELETE',
+    }).then((res) => {
+      message.success('删除成功');
+      run();
+    });
+  };
 
   const content = null;
 
@@ -40,7 +55,7 @@ const CardList = () => {
     <PageContainer content={content} extraContent={extraContent}>
       <div className={styles.cardList}>
         <List<Partial<CardListItemDataType>>
-          rowKey="id"
+          rowKey="seq"
           loading={loading}
           grid={{
             gutter: 16,
@@ -52,21 +67,33 @@ const CardList = () => {
             xxl: 4,
           }}
           dataSource={[nullData, ...list]}
-          renderItem={(item) => {
-            if (item && item.id) {
+          renderItem={(item, index) => {
+            if (item && item.seq) {
               return (
-                <List.Item key={item.id}>
+                <List.Item key={item.seq}>
                   <Card
                     hoverable
                     className={styles.card}
-                    actions={[<a key="option1">修改</a>, <a key="option2">删除</a>]}
+                    actions={[
+                      <a
+                        key="option1"
+                        onClick={() => {
+                          changeUpdate(index);
+                        }}
+                      >
+                        修改
+                      </a>,
+                      <a key="option2" onClick={() => deleteItem(item.seq as number)}>
+                        删除
+                      </a>,
+                    ]}
                   >
                     <Card.Meta
-                      avatar={<img alt="" className={styles.cardAvatar} src={item.avatar} />}
-                      title={<a>{item.title}</a>}
+                      avatar={<img alt="" className={styles.cardAvatar} src={item.logo} />}
+                      title={<a>{item.name}</a>}
                       description={
                         <Paragraph className={styles.item} ellipsis={{ rows: 3 }}>
-                          {item.description}
+                          {item.desc}
                         </Paragraph>
                       }
                     />
@@ -85,12 +112,19 @@ const CardList = () => {
                   }
                   modalProps={{ destroyOnClose: true }}
                   onFinish={async (values: any) => {
-                    console.log(values);
-                    message.success('提交成功');
-                  }}
-                  initialValues={{
-                    name: '蚂蚁设计有限公司',
-                    useMode: 'chapter',
+                    const formData = new FormData();
+                    formData.append('name', values.name);
+                    formData.append('desc', values.desc || '');
+                    formData.append('logo', values.logo[0]?.thumbUrl || '');
+                    await request<Record<string, any>>('/api/v1/project/create', {
+                      method: 'PUT',
+                      data: formData,
+                      requestType: 'form',
+                    }).then((res) => {
+                      console.log('res: ', res);
+                      message.success('提交成功');
+                    });
+                    return true;
                   }}
                 >
                   <ProFormText
@@ -121,6 +155,47 @@ const CardList = () => {
           }}
         />
       </div>
+      <ModalForm
+        width={480}
+        modalProps={{ destroyOnClose: true }}
+        visible={updateVisible}
+        onVisibleChange={setUpdateVisible}
+        initialValues={{ ...editing, logo: [{ thumbUrl: (editing as any).logo }] }}
+        onFinish={async (values: any) => {
+          const formData = new FormData();
+          formData.append('name', values.name);
+          formData.append('desc', values.desc || '');
+          formData.append('logo', values.logo[0]?.thumbUrl || '');
+          await request<Record<string, any>>(`/api/v1/project/${(editing as any).seq}`, {
+            method: 'PUT',
+            data: formData,
+            requestType: 'form',
+          }).then((res) => {
+            console.log('res: ', res);
+            message.success('提交成功');
+          });
+          run();
+          return true;
+        }}
+      >
+        <ProFormText
+          width="md"
+          name="name"
+          label="项目名称"
+          placeholder="请输入名称"
+          rules={[{ required: true, message: 'Please input project name!' }]}
+        />
+        <ProFormTextArea width="md" name="desc" label="项目描述" placeholder="请输入描述" />
+        <ProFormUploadButton
+          name="logo"
+          label="logo"
+          max={1}
+          fieldProps={{
+            name: 'file',
+            listType: 'picture-card',
+          }}
+        />
+      </ModalForm>
     </PageContainer>
   );
 };

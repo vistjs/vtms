@@ -13,8 +13,15 @@
     "resolveJsonModule": true,
     "isolatedModules": true,
     "jsx": "preserve",
-    "incremental": true
+    "incremental": true,
+    "baseUrl": "./",
+    "paths": {
+      "@/constant/*": ["./constant/*"],
+      "@/lib/*": ["./lib/*"],
+      "@/models/*": ["./models/*"],
+    }
   },
+
   "include": ["next-env.d.ts", "global.d.ts", "**/*.ts", "**/*.tsx"],
   "exclude": ["node_modules"]
 }
