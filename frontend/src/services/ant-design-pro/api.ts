@@ -1,7 +1,7 @@
 // @ts-ignore
 /* eslint-disable */
 import { request } from '@umijs/max';
-import { CardListItemDataType } from '../../pages/Project/List/data'
+import { CardListItemDataType } from '../../pages/Project/List/data';
 /** 获取当前的用户 GET /api/currentUser */
 export async function currentUser(options?: { [key: string]: any }) {
   return request<{
@@ -73,6 +73,13 @@ export async function addRule(options?: { [key: string]: any }) {
   return request<API.RuleListItem>('/api/rule', {
     method: 'POST',
     ...(options || {}),
+  });
+}
+
+export async function addUser(data: { [key: string]: any }) {
+  return request<API.RuleListItem>('/api/v1/user/create', {
+    method: 'POST',
+    data,
   });
 }
 

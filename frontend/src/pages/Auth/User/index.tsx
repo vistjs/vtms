@@ -1,4 +1,4 @@
-import { addRule, removeRule, rule, updateRule } from '@/services/ant-design-pro/api';
+import { addRule, removeRule, rule, updateRule, addUser } from '@/services/ant-design-pro/api';
 import { PlusOutlined } from '@ant-design/icons';
 import type { ActionType, ProColumns, ProDescriptionsItemProps } from '@ant-design/pro-components';
 import {
@@ -22,7 +22,8 @@ import React, { useRef, useState } from 'react';
 const handleAdd = async (fields: API.RuleListItem) => {
   const hide = message.loading('正在添加');
   try {
-    await addRule({ ...fields });
+    // await addRule({ ...fields });
+    await addUser({ name: 'xiangli', password: '1232456', roles: [] });
     hide();
     message.success('Added successfully');
     return true;
