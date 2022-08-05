@@ -1,4 +1,11 @@
-import { addRule, removeRule, rule, updateRule } from '@/services/ant-design-pro/api';
+import {
+  addRule,
+  removeRule,
+  rule,
+  updateRule,
+  getRoles,
+  addRole,
+} from '@/services/ant-design-pro/api';
 import { PlusOutlined } from '@ant-design/icons';
 import type { ActionType, ProColumns, ProDescriptionsItemProps } from '@ant-design/pro-components';
 import {
@@ -14,6 +21,8 @@ import { FormattedMessage, useIntl } from '@umijs/max';
 import { Button, Drawer, Input, message } from 'antd';
 import React, { useRef, useState } from 'react';
 
+import { IRole } from './constants';
+
 /**
  * @en-US Add node
  * @zh-CN 添加节点
@@ -22,7 +31,7 @@ import React, { useRef, useState } from 'react';
 const handleAdd = async (fields: API.RuleListItem) => {
   const hide = message.loading('正在添加');
   try {
-    await addRule({ ...fields });
+    await addRole({ ...fields });
     hide();
     message.success('Added successfully');
     return true;
@@ -81,6 +90,11 @@ const handleRemove = async (selectedRows: API.RuleListItem[]) => {
   }
 };
 
+const postData = (data) => {
+  console.log('data:', data);
+  return data?.list;
+};
+
 const User: React.FC = () => {
   /**
    * @en-US Pop-up window of new window
@@ -107,7 +121,7 @@ const User: React.FC = () => {
 
   const columns: ProColumns<API.RuleListItem>[] = [
     {
-      title: '名称',
+      title: '角色',
       dataIndex: 'name',
       valueType: 'text',
     },
@@ -157,7 +171,8 @@ const User: React.FC = () => {
             <PlusOutlined /> <FormattedMessage id="pages.searchTable.new" defaultMessage="New" />
           </Button>,
         ]}
-        request={rule}
+        request={getRoles}
+        postData={postData}
         columns={columns}
         rowSelection={{
           onChange: (_, selectedRows) => {

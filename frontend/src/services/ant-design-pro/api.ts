@@ -2,6 +2,8 @@
 /* eslint-disable */
 import { request } from '@umijs/max';
 import { CardListItemDataType } from '../../pages/Project/List/data';
+
+const API_PREFIX = '/api/v1';
 /** 获取当前的用户 GET /api/currentUser */
 export async function currentUser(options?: { [key: string]: any }) {
   return request<{
@@ -60,6 +62,46 @@ export async function rule(
   });
 }
 
+/**获取用户 */
+export async function getUsers(
+  params: {
+    // query
+    /** 当前的页码 */
+    current?: number;
+    /** 页面的容量 */
+    pageSize?: number;
+  },
+  options?: { [key: string]: any },
+) {
+  return request<API.RuleList>(`${API_PREFIX}/user/users`, {
+    method: 'GET',
+    params: {
+      ...params,
+    },
+    ...(options || {}),
+  });
+}
+
+/**获取角色 */
+export async function getRoles(
+  params: {
+    // query
+    /** 当前的页码 */
+    current?: number;
+    /** 页面的容量 */
+    pageSize?: number;
+  },
+  options?: { [key: string]: any },
+) {
+  return request<API.RuleList>(`${API_PREFIX}/role/roles`, {
+    method: 'GET',
+    params: {
+      ...params,
+    },
+    ...(options || {}),
+  });
+}
+
 /** 新建规则 PUT /api/rule */
 export async function updateRule(options?: { [key: string]: any }) {
   return request<API.RuleListItem>('/api/rule', {
@@ -78,6 +120,13 @@ export async function addRule(options?: { [key: string]: any }) {
 
 export async function addUser(data: { [key: string]: any }) {
   return request<API.RuleListItem>('/api/v1/user/create', {
+    method: 'POST',
+    data,
+  });
+}
+
+export async function addRole(data: { [key: string]: any }) {
+  return request<API.RuleListItem>('/api/v1/role/create', {
     method: 'POST',
     data,
   });

@@ -1,6 +1,11 @@
 // @ts-ignore
 /* eslint-disable */
 
+export enum ROLE_TYPE {
+  admin = 1,
+  owner,
+  member,
+}
 declare namespace API {
   type CurrentUser = {
     name?: string;
@@ -48,6 +53,20 @@ declare namespace API {
     createdAt?: string;
     progress?: number;
   };
+
+  interface User {
+    id: string;
+    name: string;
+    password: string;
+    roles?: string[];
+  }
+
+  interface Role {
+    id: string;
+    name: string;
+    type: ROLE_TYPE;
+    project_id: string;
+  }
 
   type RuleList = {
     data?: RuleListItem[];

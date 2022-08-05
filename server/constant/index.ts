@@ -6,3 +6,9 @@ export enum PROJECT_STATUS {
 }
 
 export const PROJECT_SQ = 'project_sq'
+
+export enum ROLE_TYPE {
+    admin = 1,
+    owner,
+    member
+}

@@ -1,4 +1,11 @@
-import { addRule, removeRule, rule, updateRule, addUser } from '@/services/ant-design-pro/api';
+import {
+  addRule,
+  removeRule,
+  rule,
+  updateRule,
+  addUser,
+  getUsers,
+} from '@/services/ant-design-pro/api';
 import { PlusOutlined } from '@ant-design/icons';
 import type { ActionType, ProColumns, ProDescriptionsItemProps } from '@ant-design/pro-components';
 import {
@@ -9,21 +16,26 @@ import {
   ProFormText,
   ProFormTextArea,
   ProTable,
+  ProFormSelect,
 } from '@ant-design/pro-components';
 import { FormattedMessage, useIntl } from '@umijs/max';
 import { Button, Drawer, Input, message } from 'antd';
 import React, { useRef, useState } from 'react';
+import { AddUser } from './user';
 
 /**
  * @en-US Add node
  * @zh-CN 添加节点
  * @param fields
  */
-const handleAdd = async (fields: API.RuleListItem) => {
+const handleAdd = async (fields: AddUser) => {
   const hide = message.loading('正在添加');
+  console.log('fields:', fields);
+  const { name, password, roles } = fields;
+  // return;
   try {
     // await addRule({ ...fields });
-    await addUser({ name: 'xiangli', password: '1232456', roles: [] });
+    await addUser({ name, password, roles: roles?.map((item) => item.id) });
     hide();
     message.success('Added successfully');
     return true;
@@ -82,6 +94,11 @@ const handleRemove = async (selectedRows: API.RuleListItem[]) => {
   }
 };
 
+const postData = (data) => {
+  console.log('data:', data);
+  return data?.list;
+};
+
 const User: React.FC = () => {
   /**
    * @en-US Pop-up window of new window
@@ -108,93 +125,40 @@ const User: React.FC = () => {
 
   const columns: ProColumns<API.RuleListItem>[] = [
     {
-      title: '名称',
+      title: '用户名',
       dataIndex: 'name',
       valueType: 'text',
     },
     {
       title: '角色',
-      dataIndex: 'desc',
+      dataIndex: 'roles',
       valueType: 'textarea',
     },
-    {
-      title: '上次登录时间',
-      sorter: true,
-      dataIndex: 'updatedAt',
-      valueType: 'dateTime',
-      renderFormItem: (item, { defaultRender, ...rest }, form) => {
-        const status = form.getFieldValue('status');
-        if (`${status}` === '0') {
-          return false;
-        }
-        if (`${status}` === '3') {
-          return (
-            <Input
-              {...rest}
-              placeholder={intl.formatMessage({
-                id: 'pages.searchTable.exception',
-                defaultMessage: 'Please enter the reason for the exception!',
-              })}
-            />
-          );
-        }
-        return defaultRender(item);
-      },
-    },
-    {
-      title: '更新时间',
-      sorter: true,
-      dataIndex: 'updatedAt',
-      valueType: 'dateTime',
-      renderFormItem: (item, { defaultRender, ...rest }, form) => {
-        const status = form.getFieldValue('status');
-        if (`${status}` === '0') {
-          return false;
-        }
-        if (`${status}` === '3') {
-          return (
-            <Input
-              {...rest}
-              placeholder={intl.formatMessage({
-                id: 'pages.searchTable.exception',
-                defaultMessage: 'Please enter the reason for the exception!',
-              })}
-            />
-          );
-        }
-        return defaultRender(item);
-      },
-    },
-    {
-      title: '更新人',
-      dataIndex: 'name',
-      valueType: 'text',
-    },
-    {
-      title: <FormattedMessage id="pages.searchTable.titleOption" defaultMessage="Operating" />,
-      dataIndex: 'option',
-      valueType: 'option',
-      render: (_, record) => [
-        <a
-          key="config"
-          onClick={() => {
-            handleUpdateModalVisible(true);
-            setCurrentRow(record);
-          }}
-        >
-          编辑
-        </a>,
-        <a
-          key="config"
-          onClick={() => {
-            handleUpdateModalVisible(true);
-            setCurrentRow(record);
-          }}
-        >
-          删除
-        </a>,
-      ],
-    },
+    // {
+    //   title: <FormattedMessage id="pages.searchTable.titleOption" defaultMessage="Operating" />,
+    //   dataIndex: 'option',
+    //   valueType: 'option',
+    //   render: (_, record) => [
+    //     <a
+    //       key="edit"
+    //       onClick={() => {
+    //         handleUpdateModalVisible(true);
+    //         setCurrentRow(record);
+    //       }}
+    //     >
+    //       编辑
+    //     </a>,
+    //     <a
+    //       key="delete"
+    //       onClick={() => {
+    //         handleUpdateModalVisible(true);
+    //         setCurrentRow(record);
+    //       }}
+    //     >
+    //       删除
+    //     </a>,
+    //   ],
+    // },
   ];
 
   return (
@@ -220,7 +184,8 @@ const User: React.FC = () => {
             <PlusOutlined /> <FormattedMessage id="pages.searchTable.new" defaultMessage="New" />
           </Button>,
         ]}
-        request={rule}
+        request={getUsers}
+        postData={postData}
         columns={columns}
         rowSelection={{
           onChange: (_, selectedRows) => {
@@ -276,16 +241,46 @@ const User: React.FC = () => {
               required: true,
               message: (
                 <FormattedMessage
-                  id="pages.searchTable.ruleName"
-                  defaultMessage="Rule name is required"
+                  id="pages.searchTable.username"
+                  defaultMessage="Username is required"
                 />
               ),
             },
           ]}
           width="md"
           name="name"
+          label="Username"
         />
-        <ProFormTextArea width="md" name="desc" />
+        <ProFormText
+          rules={[
+            {
+              required: true,
+              message: (
+                <FormattedMessage
+                  id="pages.searchTable.password"
+                  defaultMessage="Password is required"
+                />
+              ),
+            },
+          ]}
+          width="md"
+          name="password"
+          label="Password"
+        />
+        <ProFormSelect.SearchSelect
+          name="roles"
+          label="Roles"
+          fieldProps={{
+            labelInValue: true,
+            style: {
+              minWidth: 140,
+            },
+          }}
+          debounceTime={300}
+          request={async ({ keyWords = '' }) => {
+            return [{ value: '12', label: 'CRM Owner' }];
+          }}
+        />
       </ModalForm>
     </PageContainer>
   );
