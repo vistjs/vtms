@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { PlusOutlined } from '@ant-design/icons';
 import { Button, Card, List, Typography } from 'antd';
-import { useRequest, request } from '@umijs/max';
+import { useRequest, request, Link } from '@umijs/max';
 import { queryFakeList } from '@/services/ant-design-pro/api';
 import {
   ModalForm,
@@ -75,15 +75,16 @@ const CardList = () => {
                     hoverable
                     className={styles.card}
                     actions={[
+                      <Link to={`/project/${item.seq}/cases`}>详情</Link>,
                       <a
-                        key="option1"
+                        key="option2"
                         onClick={() => {
                           changeUpdate(index);
                         }}
                       >
                         修改
                       </a>,
-                      <a key="option2" onClick={() => deleteItem(item.seq as number)}>
+                      <a key="option3" onClick={() => deleteItem(item.seq as number)}>
                         删除
                       </a>,
                     ]}
@@ -112,18 +113,22 @@ const CardList = () => {
                   }
                   modalProps={{ destroyOnClose: true }}
                   onFinish={async (values: any) => {
-                    const formData = new FormData();
-                    formData.append('name', values.name);
-                    formData.append('desc', values.desc || '');
-                    formData.append('logo', values.logo[0]?.thumbUrl || '');
-                    await request<Record<string, any>>('/api/v1/project/create', {
-                      method: 'PUT',
-                      data: formData,
-                      requestType: 'form',
-                    }).then((res) => {
-                      console.log('res: ', res);
-                      message.success('提交成功');
-                    });
+                    try {
+                      const formData = new FormData();
+                      formData.append('name', values.name);
+                      formData.append('desc', values.desc || '');
+                      formData.append('logo', (values.logo && values.logo[0]?.thumbUrl) || '');
+                      await request<Record<string, any>>('/api/v1/project/create', {
+                        method: 'PUT',
+                        data: formData,
+                        requestType: 'form',
+                      }).then((res) => {
+                        console.log('res: ', res);
+                        message.success('提交成功');
+                      });
+                    } catch (error) {
+                      console.log(error);
+                    }
                     return true;
                   }}
                 >

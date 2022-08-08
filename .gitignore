@@ -33,3 +33,5 @@ package-lock.json
 .eslintcache
 
 tmp
+
+.env

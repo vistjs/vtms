@@ -50,9 +50,10 @@
         component: './Project/List',
       },
       {
-        path: '/project/cases',
+        path: '/project/:projectId/cases',
         name: 'cases',
         component: './Project/Cases',
+        hideInMenu: true,
       },
       {
         path: '/project/mocks',

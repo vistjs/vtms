@@ -1,18 +1,22 @@
-export const TC_MONGODB_DBNAME = 'codeless_tc'
+export const TC_MONGODB_DBNAME = 'codeless_tc';
 
 export enum PROJECT_STATUS {
-    enable = 1,
-    deleted,
+  enable = 1,
+  deleted,
 }
 
-export const PROJECT_SQ = 'project_sq'
+export const PROJECT_SQ = 'project_sq';
 
 export const USER_SQ = 'user_sq'
 
 export const ROLE_SQ = 'role_sq'
 
 export enum ROLE_TYPE {
-    admin = 1,
-    owner,
-    member
+  admin = 1,
+  owner,
+  member,
 }
+
+export const SORTER_ASC = 'ascend';
+
+export const SORTER_DES = 'descend';
