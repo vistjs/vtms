@@ -1,8 +1,8 @@
-import  nextConnect  from  'next-connect';
-import  multipartFormParser  from  './multipart-form-parser';
+import nextConnect from 'next-connect';
+import multipartFormParser from './multipart-form-parser';
 
-const  middleware = nextConnect();
+const middleware = nextConnect();
 
-middleware.use(multipartFormParser)
+middleware.use(multipartFormParser);
 
-export  default  middleware;
+export default middleware;
