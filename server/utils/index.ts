@@ -1,5 +1,5 @@
 import Sequence from '@/models/sequence';
-import { PROJECT_SQ } from '@/constant/index'
+import { PROJECT_SQ, USER_SQ, ROLE_SQ } from '@/constant/index'
 
 export async function newProjectSeq() {
     let seqId = 1
@@ -9,6 +9,30 @@ export async function newProjectSeq() {
     await Sequence.updateOne({name: PROJECT_SQ },{$push:{seq:1}})
     }else{
     await Sequence.create({name: PROJECT_SQ, seq: [1] })
+    }
+    return seqId;
+}
+
+export async function newUserSeq() {
+    let seqId = 1
+    let seqDoc = await Sequence.findOne({ name: USER_SQ }).lean();
+    if(seqDoc){
+    seqId = seqDoc.seq.length + 1;
+    await Sequence.updateOne({name: USER_SQ },{$push:{seq:1}})
+    }else{
+    await Sequence.create({name: USER_SQ, seq: [1] })
+    }
+    return seqId;
+}
+
+export async function newRoleSeq() {
+    let seqId = 1
+    let seq = await Sequence.findOne({ name: ROLE_SQ }).lean();
+    if(seq){
+    seqId = seq.seq.length + 1;
+    await Sequence.updateOne({name: ROLE_SQ },{$push:{seq:1}})
+    }else{
+    await Sequence.create({name: ROLE_SQ, seq: [1] })
     }
     return seqId;
 }

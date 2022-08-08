@@ -7,6 +7,8 @@ import HttpStatus from 'http-status-codes'
 import nextConnect from 'next-connect';
 import { PROJECT_STATUS } from '@/constant/index'
 
+import { newUserSeq } from '@/utils/index'
+
 const handler = nextConnect();
 
 // handler.get(async(req: NextApiRequest, res: NextApiResponse) => {
@@ -28,7 +30,9 @@ handler.post(async(req: NextApiRequest, res: NextApiResponse) => {
     await conn()
     console.log('req:', req.body)
     // TODO: do it later
-    const docs = await UserModel.create({ name, password, roles, id: '22' })
+    const seqId = await newUserSeq()
+    const docs = await UserModel.create({ name, password, roles, id: seqId })
+    console.log('docs docs:', docs);
     res.status(HttpStatus.OK).json({ data:{},code:0,message:'' })
 	} catch (err: any) {
         console.log('err:', err)

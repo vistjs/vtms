@@ -73,12 +73,28 @@ export async function getUsers(
   },
   options?: { [key: string]: any },
 ) {
-  return request<API.RuleList>(`${API_PREFIX}/user/users`, {
+  return request<API.User>(`${API_PREFIX}/user/users`, {
     method: 'GET',
     params: {
       ...params,
     },
     ...(options || {}),
+  });
+}
+
+/**增加用户 */
+export async function addUser(data: { [key: string]: any }) {
+  return request<API.AddUser>('/api/v1/user/create', {
+    method: 'POST',
+    data,
+  });
+}
+
+/**删除用户 */
+export async function deleteUser(data: { [key: string]: any }) {
+  return request<API.User>('/api/v1/user/delete', {
+    method: 'DELETE',
+    data,
   });
 }
 
@@ -115,13 +131,6 @@ export async function addRule(options?: { [key: string]: any }) {
   return request<API.RuleListItem>('/api/rule', {
     method: 'POST',
     ...(options || {}),
-  });
-}
-
-export async function addUser(data: { [key: string]: any }) {
-  return request<API.RuleListItem>('/api/v1/user/create', {
-    method: 'POST',
-    data,
   });
 }
 

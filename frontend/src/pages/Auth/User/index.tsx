@@ -3,10 +3,11 @@ import {
   removeRule,
   rule,
   updateRule,
-  addUser,
   getUsers,
+  addUser,
+  deleteUser,
 } from '@/services/ant-design-pro/api';
-import { PlusOutlined } from '@ant-design/icons';
+import { PlusOutlined, ExclamationCircleOutlined } from '@ant-design/icons';
 import type { ActionType, ProColumns, ProDescriptionsItemProps } from '@ant-design/pro-components';
 import {
   FooterToolbar,
@@ -19,23 +20,23 @@ import {
   ProFormSelect,
 } from '@ant-design/pro-components';
 import { FormattedMessage, useIntl } from '@umijs/max';
-import { Button, Drawer, Input, message } from 'antd';
+import { Button, Drawer, Input, message, Modal } from 'antd';
 import React, { useRef, useState } from 'react';
 import { AddUser } from './user';
+
+const { confirm } = Modal;
 
 /**
  * @en-US Add node
  * @zh-CN 添加节点
  * @param fields
  */
+
 const handleAdd = async (fields: AddUser) => {
   const hide = message.loading('正在添加');
-  console.log('fields:', fields);
   const { name, password, roles } = fields;
-  // return;
   try {
-    // await addRule({ ...fields });
-    await addUser({ name, password, roles: roles?.map((item) => item.id) });
+    await addUser({ name, password, roles });
     hide();
     message.success('Added successfully');
     return true;
@@ -123,7 +124,7 @@ const User: React.FC = () => {
    * */
   const intl = useIntl();
 
-  const columns: ProColumns<API.RuleListItem>[] = [
+  const columns: ProColumns<API.User>[] = [
     {
       title: '用户名',
       dataIndex: 'name',
@@ -132,38 +133,52 @@ const User: React.FC = () => {
     {
       title: '角色',
       dataIndex: 'roles',
-      valueType: 'textarea',
+      // valueType: (record) => {
+      //   return 'ddd';
+      // },
+      render(_, record) {
+        return record?.roles?.map((role) => role?.name).join(',');
+      },
     },
-    // {
-    //   title: <FormattedMessage id="pages.searchTable.titleOption" defaultMessage="Operating" />,
-    //   dataIndex: 'option',
-    //   valueType: 'option',
-    //   render: (_, record) => [
-    //     <a
-    //       key="edit"
-    //       onClick={() => {
-    //         handleUpdateModalVisible(true);
-    //         setCurrentRow(record);
-    //       }}
-    //     >
-    //       编辑
-    //     </a>,
-    //     <a
-    //       key="delete"
-    //       onClick={() => {
-    //         handleUpdateModalVisible(true);
-    //         setCurrentRow(record);
-    //       }}
-    //     >
-    //       删除
-    //     </a>,
-    //   ],
-    // },
+    {
+      title: <FormattedMessage id="pages.searchTable.titleOption" defaultMessage="Operating" />,
+      dataIndex: 'option',
+      valueType: 'option',
+      render: (_, record) => [
+        <Button
+          onClick={() => {
+            confirm({
+              title: 'Are you sure delete this user?',
+              icon: <ExclamationCircleOutlined />,
+              content: '',
+              okText: 'Yes',
+              okType: 'danger',
+              cancelText: 'No',
+              async onOk() {
+                const success = await deleteUser({ id: record.id });
+                if (success) {
+                  handleModalVisible(false);
+                  if (actionRef.current) {
+                    actionRef.current.reload();
+                  }
+                }
+              },
+              onCancel() {
+                console.log('Cancel');
+              },
+            });
+          }}
+          type="link"
+        >
+          Delete
+        </Button>,
+      ],
+    },
   ];
 
   return (
     <PageContainer>
-      <ProTable<API.RuleListItem, API.PageParams>
+      <ProTable<API.User, API.PageParams>
         headerTitle={intl.formatMessage({
           id: 'pages.searchTable.title',
           defaultMessage: 'Enquiry form',
@@ -187,36 +202,7 @@ const User: React.FC = () => {
         request={getUsers}
         postData={postData}
         columns={columns}
-        rowSelection={{
-          onChange: (_, selectedRows) => {
-            setSelectedRows(selectedRows);
-          },
-        }}
       />
-      {selectedRowsState?.length > 0 && (
-        <FooterToolbar
-          extra={
-            <div>
-              <FormattedMessage id="pages.searchTable.chosen" defaultMessage="Chosen" />{' '}
-              <a style={{ fontWeight: 600 }}>{selectedRowsState.length}</a>{' '}
-              <FormattedMessage id="pages.searchTable.item" defaultMessage="项" />
-            </div>
-          }
-        >
-          <Button
-            onClick={async () => {
-              await handleRemove(selectedRowsState);
-              setSelectedRows([]);
-              actionRef.current?.reloadAndRest?.();
-            }}
-          >
-            <FormattedMessage
-              id="pages.searchTable.batchDeletion"
-              defaultMessage="Batch deletion"
-            />
-          </Button>
-        </FooterToolbar>
-      )}
       <ModalForm
         title={intl.formatMessage({
           id: 'pages.searchTable.createForm.newRule',
@@ -226,7 +212,15 @@ const User: React.FC = () => {
         visible={createModalVisible}
         onVisibleChange={handleModalVisible}
         onFinish={async (value) => {
-          const success = await handleAdd(value as API.RuleListItem);
+          console.log('value::', value);
+          const { name, password } = value;
+          let roles = value?.roles?.map((item) => item?.value);
+          console.log('roles:', roles);
+          const success = await handleAdd({
+            name,
+            password,
+            roles,
+          } as AddUser);
           if (success) {
             handleModalVisible(false);
             if (actionRef.current) {
@@ -278,7 +272,7 @@ const User: React.FC = () => {
           }}
           debounceTime={300}
           request={async ({ keyWords = '' }) => {
-            return [{ value: '12', label: 'CRM Owner' }];
+            return [{ value: '11', label: 'CRM Owner' }];
           }}
         />
       </ModalForm>

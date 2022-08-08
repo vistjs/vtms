@@ -13,7 +13,7 @@ const roleSchema = new Schema<IRole>({
   id: {type: String, required: true, unique: true},
   name: {type: String, required: true, unique: true},
   type: {type: Number,required: true},
-  project_id: {type: String, required: true, unique: true},
+  project_id: {type: String, required: true},
 }, { timestamps: true });
 
 roleSchema.index({ name: 1 });
