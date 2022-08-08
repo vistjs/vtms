@@ -1,0 +1,28 @@
+.case-tree {
+  width: 240px;
+  .ant-tree-node-content-wrapper {
+    display: flex;
+  }
+  .ant-tree-title {
+    flex: 1;
+    display: flex;
+  }
+  .tree-title-text {
+    flex: 1;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .tree-title-options {
+    // display: none;
+    & > span {
+      padding: 5px;
+    }
+  }
+  .ant-tree-treenode {
+    padding: 5px 0;
+    &:hover {
+      .tree-title-options {
+      }
+    }
+  }
+}
