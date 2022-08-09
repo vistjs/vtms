@@ -8,6 +8,7 @@ import { newProjectSeq } from '../../../utils';
 
 import nextConnect from 'next-connect';
 import Category from '@/models/category';
+import Case, { CaseStatus } from '@/models/case';
 
 const handler = nextConnect();
 
@@ -23,14 +24,18 @@ handler.put(async (req: NextApiRequest, res: NextApiResponse) => {
     let doc;
     if (id === 'create') {
       const seqId = await newProjectSeq();
-      const category = await Category.create({ project: seqId, name: 'all' });
       doc = await Project.create({
         name,
         logo,
         desc,
         seq: seqId,
-        category: category._id,
       });
+      const category = await Category.create({
+        project: doc._id,
+        title: 'all',
+      });
+      doc.category = category._id;
+      await doc.save();
     } else {
       doc = await Project.findOneAndUpdate(
         { seq: Number(id) },
@@ -42,6 +47,7 @@ handler.put(async (req: NextApiRequest, res: NextApiResponse) => {
       .status(HttpStatus.OK)
       .json({ data: { id: doc.seq }, code: 0, message: '' });
   } catch (err: any) {
+    console.log(err);
     res.status(HttpStatus.BAD_REQUEST).json({ error: err.message });
   }
 });
@@ -52,10 +58,27 @@ handler.delete(async (req: NextApiRequest, res: NextApiResponse) => {
       query: { id },
     } = req;
     await conn();
-    let doc = await Project.findOneAndUpdate(
-      { seq: Number(id) },
-      { status: PROJECT_STATUS.deleted },
-    );
+    const doc = await Project.findOne({
+      seq: Number(id),
+    });
+    const caseCount = await Case.find({
+      project: doc._id,
+      status: {
+        $in: [
+          CaseStatus.ACTIVE,
+          CaseStatus.NOTACTIVE,
+          CaseStatus.RUNNING,
+          CaseStatus.ERROR,
+        ],
+      },
+    }).count();
+    if (caseCount > 0) {
+      throw new Error(
+        'Please delete all cases out of it if you want to delete the project.',
+      );
+    }
+    doc.status = PROJECT_STATUS.deleted;
+    doc.save();
     res
       .status(HttpStatus.OK)
       .json({ data: { id: doc.seq }, code: 0, message: '' });

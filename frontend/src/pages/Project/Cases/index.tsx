@@ -145,7 +145,7 @@ const Cases: React.FC = () => {
                     }}
                   >
                     <Steps direction="vertical">
-                      {entity.records.map((item: any, index: string) => {
+                      {entity.frames.map((item: any, index: string) => {
                         let title;
                         let subInfo;
                         if (item.type === RecordType.MOUSE) {
