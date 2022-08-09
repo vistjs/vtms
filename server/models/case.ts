@@ -10,7 +10,7 @@ export enum CaseStatus {
 
 interface Case {
   name: string;
-  records: Schema.Types.Mixed;
+  frames: Schema.Types.Mixed;
   apis: Schema.Types.Mixed;
   url: string;
   status: CaseStatus;
@@ -37,7 +37,7 @@ const CaseSchema = new Schema<Case>({
     default: CaseStatus.NOTACTIVE,
     index: true,
   },
-  records: {
+  frames: {
     type: Schema.Types.Mixed,
     required: true,
   },

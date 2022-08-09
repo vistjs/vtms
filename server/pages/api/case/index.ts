@@ -43,7 +43,7 @@ handler.get(async (req: NextApiRequest, res: NextApiResponse) => {
     });
 
     if (!project) {
-      throw new Error('project do not exist');
+      throw new Error('project does not exist');
     }
 
     const casesQuery = Case.find({
@@ -79,7 +79,7 @@ handler.get(async (req: NextApiRequest, res: NextApiResponse) => {
         project: project._id,
       });
       if (!category) {
-        throw new Error('categoryId do not exist in this project');
+        throw new Error('categoryId does not exist in this project');
       }
       if (category.parent) {
         // 没有父节点代表是跟节点， 不需要过滤
@@ -122,33 +122,31 @@ handler.get(async (req: NextApiRequest, res: NextApiResponse) => {
 
 handler.post(async (req: NextApiRequest, res: NextApiResponse) => {
   try {
-    console.log(req.body);
     const defaultName = `new case on ${moment().format(
       'YYYY-MM-DD_HH:mm:ss',
     )} ${getRamdomStr()}`;
     const {
-      body: {
-        name = defaultName,
-        records,
-        apis,
-        url,
-        width,
-        height,
-        projectId,
-      },
+      body: { name = defaultName, frames, apis, url, w, h, pid },
     } = req;
+
+    if (!frames || !pid || !w || !h) {
+      throw new Error('parameter validation failed');
+    }
 
     await conn();
     const project = await Project.findOne({
-      seq: projectId,
+      seq: pid,
     });
+    if (!project) {
+      throw new Error('project does not exist');
+    }
     const caseInstances = await Case.create({
       name,
-      records,
+      frames,
       apis,
       url,
-      width,
-      height,
+      width: w,
+      height: h,
       project: project._id,
       category: project.category,
     });

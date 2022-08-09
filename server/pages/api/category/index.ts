@@ -9,7 +9,7 @@ import { handlePagination } from 'utils';
 import { SORTER_ASC, SORTER_DES } from '@/constant/index';
 import Project from '@/models/project';
 import { getAllSubCategoryId, handleTree } from './util';
-import Case from '@/models/case';
+import Case, { CaseStatus } from '@/models/case';
 
 const handler = nextConnect();
 
@@ -22,7 +22,7 @@ handler.get(async (req: NextApiRequest, res: NextApiResponse) => {
     await conn();
     const project = await Project.findOne({ seq: projectId });
     if (!project) {
-      throw new Error('projectId do not exist');
+      throw new Error('projectId does not exist');
     }
     const categories = await Category.find({ project: project._id });
     const categoryTree = handleTree(categories);
@@ -44,7 +44,7 @@ handler.post(async (req: NextApiRequest, res: NextApiResponse) => {
     const category = await Category.findOne({ _id: parentId });
 
     if (!category) {
-      throw new Error('parent do not exist');
+      throw new Error('parent does not exist');
     }
 
     const categoryInstances = await Category.create({
@@ -96,7 +96,7 @@ handler.delete(async (req: NextApiRequest, res: NextApiResponse) => {
       _id: id,
     });
     if (!category) {
-      throw new Error('category do not exist');
+      throw new Error('category does not exist');
     }
     // if (!category.parent) {
     //   throw new Error('root node can not delete');
@@ -105,6 +105,14 @@ handler.delete(async (req: NextApiRequest, res: NextApiResponse) => {
     const len = await Case.find({
       category: {
         $in: ids,
+      },
+      status: {
+        $in: [
+          CaseStatus.ACTIVE,
+          CaseStatus.NOTACTIVE,
+          CaseStatus.RUNNING,
+          CaseStatus.ERROR,
+        ],
       },
     }).count();
     if (len > 0) {

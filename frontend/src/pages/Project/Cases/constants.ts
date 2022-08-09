@@ -2,7 +2,7 @@ export type CaseListItem = {
   _id: string;
   name: string;
   status: number;
-  records: any;
+  frames: any;
   apis: any;
   runs: number;
   lastRun?: string;
