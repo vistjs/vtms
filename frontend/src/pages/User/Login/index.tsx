@@ -56,14 +56,16 @@ const Login: React.FC = () => {
     try {
       // 登录
       const msg = await login({ ...values, type });
+      console.log('msg:', msg);
       if (msg.status === 'ok') {
         const defaultLoginSuccessMessage = intl.formatMessage({
           id: 'pages.login.success',
           defaultMessage: '登录成功！',
         });
         message.success(defaultLoginSuccessMessage);
-        await fetchUserInfo();
+        // await fetchUserInfo();
         const urlParams = new URL(window.location.href).searchParams;
+        console.log('urlParams:', urlParams);
         history.push(urlParams.get('redirect') || '/');
         return;
       }

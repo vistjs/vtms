@@ -34,9 +34,10 @@ const { confirm } = Modal;
 
 const handleAdd = async (fields: AddUser) => {
   const hide = message.loading('正在添加');
-  const { name, password, roles } = fields;
+  console.log('fields:', fields);
+  const { username, password, roles } = fields;
   try {
-    await addUser({ name, password, roles });
+    await addUser({ username, password, roles });
     hide();
     message.success('Added successfully');
     return true;
@@ -127,7 +128,7 @@ const User: React.FC = () => {
   const columns: ProColumns<API.User>[] = [
     {
       title: '用户名',
-      dataIndex: 'name',
+      dataIndex: 'username',
       valueType: 'text',
     },
     {
@@ -213,11 +214,11 @@ const User: React.FC = () => {
         onVisibleChange={handleModalVisible}
         onFinish={async (value) => {
           console.log('value::', value);
-          const { name, password } = value;
+          const { username, password } = value;
           let roles = value?.roles?.map((item) => item?.value);
           console.log('roles:', roles);
           const success = await handleAdd({
-            name,
+            username,
             password,
             roles,
           } as AddUser);
@@ -242,7 +243,7 @@ const User: React.FC = () => {
             },
           ]}
           width="md"
-          name="name"
+          name="username"
           label="Username"
         />
         <ProFormText

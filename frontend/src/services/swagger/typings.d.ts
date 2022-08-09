@@ -100,7 +100,7 @@ declare namespace API {
 
   type User = {
     id?: number;
-    name?: string;
+    username?: string;
     firstName?: string;
     lastName?: string;
     email?: string;
