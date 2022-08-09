@@ -9,7 +9,9 @@
     "start": "next start"
   },
   "dependencies": {
+    "@hapi/iron": "^7.0.0",
     "@types/formidable": "^2.0.5",
+    "cookie": "^0.5.0",
     "eslint-import-resolver-alias": "^1.1.2",
     "eslint-plugin-import": "^2.26.0",
     "formidable": "^2.0.1",
@@ -19,11 +21,17 @@
     "mongoose": "^6.4.7",
     "next": "12.2.2",
     "next-connect": "^0.13.0",
+    "passport": "^0.4.1",
+    "passport-local": "^1.0.0",
     "react": "18.2.0",
-    "react-dom": "18.2.0"
+    "react-dom": "18.2.0",
+    "uuidv4": "^6.2.13"
   },
   "devDependencies": {
+    "@types/cookie": "^0.5.1",
     "@types/node": "18.0.4",
+    "@types/passport": "^1.0.9",
+    "@types/passport-local": "^1.0.34",
     "@types/react": "18.0.15",
     "@types/react-dom": "18.0.6",
     "eslint": "8.19.0",

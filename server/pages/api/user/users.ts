@@ -12,7 +12,6 @@ const handler = nextConnect();
 handler.use(auth);
 
 function addRoleNameToUser(users: any[], roles: any[]) {
-  console.log('roles roles:', roles);
   const roleIdMap = new Map();
   roles?.forEach((role) => {
     const { id: roleId } = role;
