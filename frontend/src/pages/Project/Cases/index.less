@@ -2,18 +2,22 @@
   width: 240px;
   .ant-tree-node-content-wrapper {
     display: flex;
+    min-width: 0;
   }
   .ant-tree-title {
     flex: 1;
     display: flex;
+    min-width: 0;
   }
   .tree-title-text {
     flex: 1;
     overflow: hidden;
     text-overflow: ellipsis;
+    white-space: nowrap;
   }
   .tree-title-options {
-    // display: none;
+    display: none;
+    padding-right: 5px;
     & > span {
       padding: 5px;
     }
@@ -22,6 +26,7 @@
     padding: 5px 0;
     &:hover {
       .tree-title-options {
+        display: inline;
       }
     }
   }
