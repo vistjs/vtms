@@ -4,14 +4,16 @@
   "private": true,
   "scripts": {
     "build": "next build",
-    "dev": "next dev",
+    "dev": "pnpm run init-db && next dev",
     "lint": "next lint",
-    "start": "next start"
+    "start": "next start",
+    "init-db": "node scripts/init-users.mjs"
   },
   "dependencies": {
     "@hapi/iron": "^7.0.0",
     "@types/formidable": "^2.0.5",
     "cookie": "^0.5.0",
+    "dotenv": "^16.0.1",
     "eslint-import-resolver-alias": "^1.1.2",
     "eslint-plugin-import": "^2.26.0",
     "formidable": "^2.0.1",
