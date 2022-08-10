@@ -1,11 +1,13 @@
 import type { NextApiRequest, NextApiResponse } from 'next';
+import HttpStatus from 'http-status-codes';
+import nextConnect from 'next-connect';
+
+import type { NextApiRequestWithContext } from '@/types/index';
+
 import conn from '@/lib/mongoose';
 import UserModel, { IUser } from '@/models/user';
 import RoleModel, { IRole } from '@/models/role';
 import auth from '@/middleware/auth';
-
-import HttpStatus from 'http-status-codes';
-import nextConnect from 'next-connect';
 
 const handler = nextConnect();
 
@@ -27,7 +29,7 @@ function addRoleNameToUser(users: any[], roles: any[]) {
   return users;
 }
 
-handler.get(async (req: NextApiRequest, res: NextApiResponse) => {
+handler.get(async (req: NextApiRequestWithContext, res: NextApiResponse) => {
   try {
     const {
       query: { current, pageSize },

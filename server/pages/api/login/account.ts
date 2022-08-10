@@ -2,6 +2,8 @@ import type { NextApiRequest, NextApiResponse } from 'next';
 import HttpStatus from 'http-status-codes';
 import nextConnect from 'next-connect';
 
+import type { NextApiRequestWithContext } from '@/types/index';
+
 import conn from '@/lib/mongoose';
 import auth from '@/middleware/auth';
 import passport from '@/middleware/auth-utils/passport';
@@ -12,7 +14,7 @@ handler.use(auth);
 
 handler.post(
   passport.authenticate('local'),
-  async (req: NextApiRequest, res: NextApiResponse) => {
+  async (req: NextApiRequestWithContext, res: NextApiResponse) => {
     try {
       const {
         // query: { id },
