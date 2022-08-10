@@ -1,34 +1,38 @@
 import passport from 'passport';
 import LocalStrategy from 'passport-local';
-import { findUserByUsername, validatePassword } from './db';
+
+import conn from '@/lib/mongoose';
+import UserModel from '@/models/user';
+
+import { validatePassword } from './auth';
 
 passport.serializeUser(function (user, done) {
   // serialize the username into session
-  console.log('user::', user);
+  console.log('user in serializeUser:', user);
   done(null, user.username);
 });
 
-passport.deserializeUser(function (req, id, done) {
+passport.deserializeUser(async function (req, username, done) {
   // deserialize the username back into user object
-  const user = findUserByUsername(req, id);
+  const user = await UserModel.findOne({ username }).exec();
+  console.log('user in deserializeUser:', user);
   done(null, user);
 });
 
 passport.use(
+  // 登录接口调用时执行的中间件
   new LocalStrategy(
     { passReqToCallback: true },
-    async (req, username, password, done) => {
-      // Here you lookup the user in your DB and compare the password/hashed password
-      console.log('username in passport:', username);
-      const user = await findUserByUsername(req, username);
-      console.log('user in passport:', user);
-      // Security-wise, if you hashed the password earlier, you must verify it
-      // if (!user || await argon2.verify(user.password, password))
+    async (req, username: string, password: string, done) => {
+      await conn();
+      const user = await UserModel.findOne({ username }).exec();
+
+      console.log('user in db:', user);
+
       if (!user || !validatePassword(user, password)) {
-        console.log('req req in passport 111:', req.session);
+        // 此时中间件会自动res返回
         done(null, null);
       } else {
-        console.log('req req in passport 222:', req.session);
         done(null, user);
       }
     },

@@ -1,5 +1,6 @@
 import { Schema, models, model } from 'mongoose';
 
+import conn from '@/lib/mongoose';
 import { newUserSeq } from '@/utils/index';
 
 export interface InputUser {
@@ -37,6 +38,7 @@ const UserModel = models.User || model<IUser>('User', userSchema);
 
 export const userDb = {
   async createUser(user: IUser) {
+    await conn();
     const seqId = await newUserSeq();
     const userDoc = await UserModel.create({ ...user, id: seqId });
     return userDoc;
@@ -44,6 +46,7 @@ export const userDb = {
 
   async findUserByUsername(username: string) {
     console.log('username in db:', username);
+    await conn();
     const user = await UserModel.findOne({ username }).exec();
     console.log('user in db:', user);
     return user;

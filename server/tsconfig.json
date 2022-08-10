@@ -19,7 +19,8 @@
       "@/constant/*": ["./constant/*"],
       "@/lib/*": ["./lib/*"],
       "@/models/*": ["./models/*"],
-      "@/utils/*": ["./utils/*"]
+      "@/utils/*": ["./utils/*"],
+      "@/middleware/*": ["./middleware/*"]
     }
   },
 

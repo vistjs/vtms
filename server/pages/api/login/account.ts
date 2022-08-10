@@ -1,15 +1,10 @@
 import type { NextApiRequest, NextApiResponse } from 'next';
-import conn from '@/lib/mongoose';
-import Project from '@/models/project';
-import UserModel, { IUser } from '@/models/user';
-import auth from '../../../middleware/auth';
-import passport from '../../../middleware/auth-utils/passport';
-
 import HttpStatus from 'http-status-codes';
 import nextConnect from 'next-connect';
-import { PROJECT_STATUS } from '@/constant/index';
 
-import { newUserSeq } from '@/utils/index';
+import conn from '@/lib/mongoose';
+import auth from '@/middleware/auth';
+import passport from '@/middleware/auth-utils/passport';
 
 const handler = nextConnect();
 
@@ -24,7 +19,7 @@ handler.post(
         body: { name, password, roles },
       } = req;
       await conn();
-      console.log('req login:', req.body);
+      console.log('req.user in login:', req.user);
 
       res.status(HttpStatus.OK).json({
         data: {},
@@ -35,8 +30,7 @@ handler.post(
         type: 'account',
       });
     } catch (err: any) {
-      console.log('err:', err);
-      res.status(HttpStatus.BAD_REQUEST).json({ error: 'ffff' });
+      res.status(HttpStatus.BAD_REQUEST).json({ error: err?.message });
     }
   },
 );

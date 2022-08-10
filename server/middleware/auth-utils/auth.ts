@@ -1,9 +1,12 @@
 import Iron from '@hapi/iron';
+import crypto from 'crypto';
+// import { v4 as uuidv4 } from 'uuid';
+
+import { AUTH_ERROR } from '@/constant/index';
 
 export async function createLoginSession(session, secret) {
   const createdAt = Date.now();
   const obj = { ...session, createdAt };
-  console.log('session in createLoginSession:', session);
   const token = await Iron.seal(obj, secret, Iron.defaults);
 
   return token;
@@ -15,8 +18,34 @@ export async function getLoginSession(token, secret) {
 
   // Validate the expiration date of the session
   if (session.maxAge && Date.now() > expiresAt) {
-    throw new Error('Session expired');
+    throw new Error(AUTH_ERROR.SESSION_EXPIRED);
   }
 
   return session;
+}
+
+export function createUser({ username, password, name }) {
+  // Here you should create the user and save the salt and hashed password (some dbs may have
+  // authentication methods that will do it for you so you don't have to worry about it):
+  const salt = crypto.randomBytes(16).toString('hex');
+  const hash = crypto
+    .pbkdf2Sync(password, salt, 1000, 64, 'sha512')
+    .toString('hex');
+  const user = {
+    id: '',
+    // createdAt: Date.now(),
+    username,
+    name,
+    hash,
+    salt,
+  };
+  return user;
+}
+
+export function validatePassword(user, inputPassword: string) {
+  const inputHash = crypto
+    .pbkdf2Sync(inputPassword, user.salt, 1000, 64, 'sha512')
+    .toString('hex');
+  const passwordsMatch = user.hash === inputHash;
+  return passwordsMatch;
 }

@@ -2,7 +2,7 @@ import type { NextApiRequest, NextApiResponse } from 'next';
 import conn from '@/lib/mongoose';
 import UserModel, { IUser } from '@/models/user';
 import RoleModel, { IRole } from '@/models/role';
-import auth from '../../../middleware/auth';
+import auth from '@/middleware/auth';
 
 import HttpStatus from 'http-status-codes';
 import nextConnect from 'next-connect';
@@ -32,6 +32,7 @@ handler.get(async (req: NextApiRequest, res: NextApiResponse) => {
     const {
       query: { current, pageSize },
     } = req;
+    console.log('req.user user in users api:', req.user);
     let [offset, limit] = [1, 10];
     if (current && Number.isInteger(+current)) {
       offset = +current;

@@ -8,7 +8,7 @@ const auth = nextConnect()
   .use(
     session({
       name: 'codeless-sso',
-      secret: 'token_secret_1#$&,ggfjsfk_12_86_093_fjslkfrjkfjslfkjfs',
+      secret: 'token_secret_1#token_secret_2#codeless',
       cookie: {
         maxAge: 60 * 60 * 8, // 8 hours,
         httpOnly: true,
@@ -18,13 +18,6 @@ const auth = nextConnect()
       },
     }),
   )
-  .use((req, res, next) => {
-    // Initialize mocked database
-    // Remove this after you add your own database
-    // req.session.users = req.session.users || [];
-    console.log('req.session:::', req.session);
-    next();
-  })
   .use(passport.initialize())
   .use(passport.session());
 

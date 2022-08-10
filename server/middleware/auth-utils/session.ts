@@ -1,4 +1,6 @@
 import { parse, serialize } from 'cookie';
+import HttpStatus from 'http-status-codes';
+
 import { createLoginSession, getLoginSession } from './auth';
 
 function parseCookies(req) {
@@ -20,12 +22,16 @@ export default function session({ name, secret, cookie: cookieOpts }) {
       try {
         // the cookie needs to be unsealed using the password `secret`
         unsealed = await getLoginSession(token, secret);
-      } catch (e) {
-        // The cookie is invalid
-        // 登录态过期 TODO:增加处理
+      } catch (err) {
+        // The cookie is invalid or expired
+        res
+          .status(HttpStatus.UNAUTHORIZED)
+          .json({ code: 0, message: err?.message });
+        console.log('----session error----:', err);
+        res.end();
       }
     }
-    console.log('unsealed:', unsealed);
+    console.log('req token:', token);
 
     req.session = unsealed;
 
@@ -38,7 +44,8 @@ export default function session({ name, secret, cookie: cookieOpts }) {
       }
 
       const token = await createLoginSession(req.session, secret);
-      console.log('token in res::', token);
+      console.log('new token:', token);
+      // 每次请求颁发新的token
       res.setHeader('Set-Cookie', serialize(name, token, cookieOpts));
       oldEnd.apply(this, args);
     };
