@@ -1,5 +1,5 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react';
-import { Form, Layout, message, Modal, Steps, Tree } from 'antd';
+import { Form, Layout, message, Modal, Steps, Tooltip, Tree } from 'antd';
 import type { DataNode } from 'antd/es/tree';
 import moment from 'moment';
 import { DeleteOutlined, EditOutlined, PlusOutlined } from '@ant-design/icons';
@@ -285,27 +285,41 @@ const Cases: React.FC = () => {
 
   const getCategoryTree = useCallback((projectId: string) => {
     getCategories(projectId).then(({ data }) => {
-      const handleTree = (category: category) => {
+      const maxLen = 13; // 超出需要用tooltip
+      const handleTree = (category: category, n = 0) => {
+        const { title, _id } = category;
         const node: categoryTreeNode = {
-          key: category._id,
-          label: category.title,
+          key: _id,
+          label: title,
           title: (
             <>
-              <span className="tree-title-text">{category.title}</span>
+              <span className="tree-title-text">
+                {title.length > maxLen - n * 2 ? (
+                  <Tooltip placement="topLeft" title={title}>
+                    {title}
+                  </Tooltip>
+                ) : (
+                  title
+                )}
+              </span>
               <span
                 className="tree-title-options"
                 data-id={category._id}
                 onClick={handleAddCategory}
               >
-                <PlusOutlined />
-                <EditOutlined />
-                <DeleteOutlined />
+                {n < 4 && <PlusOutlined />}
+                {n > 0 && (
+                  <>
+                    <EditOutlined />
+                    <DeleteOutlined />
+                  </>
+                )}
               </span>
             </>
           ),
         };
         if (category.children) {
-          node.children = category.children.map((item) => handleTree(item));
+          node.children = category.children.map((item) => handleTree(item, n + 1));
         } else {
           node.isLeaf = true;
         }
