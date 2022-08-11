@@ -9,6 +9,9 @@ export type CaseListItem = {
   url: string;
   width: number;
   height: number;
+  lastOperator: {
+    name: string;
+  };
   category: string;
   updatedAt: string;
   createdAt: string;

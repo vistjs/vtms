@@ -2,17 +2,18 @@ import type { NextApiRequest, NextApiResponse } from 'next';
 import conn from '@/lib/mongoose';
 import Case, { CaseStatus } from '@/models/case';
 import HttpStatus from 'http-status-codes';
-import moment from 'moment';
-
 import nextConnect from 'next-connect';
 import { handlePagination } from 'utils';
 import { SORTER_ASC, SORTER_DES } from '@/constant/index';
 import Category from '@/models/category';
 import { getAllSubCategoryId } from '../category/util';
 import Project from '@/models/project';
+import auth from '@/middleware/auth';
+import type { NextApiRequestWithContext } from '@/types/index';
 
 const handler = nextConnect();
-const getRamdomStr = () => Math.random().toString(36).slice(2);
+
+handler.use(auth);
 
 handler.get(async (req: NextApiRequest, res: NextApiResponse) => {
   try {
@@ -92,21 +93,22 @@ handler.get(async (req: NextApiRequest, res: NextApiResponse) => {
         });
       }
     }
-    if (updateAt && typeof updateAt === 'string') {
-      if (updateAt == SORTER_ASC) {
-        casesQuery.sort({
-          updateAt: 'asc',
-        });
-      } else if (updateAt == SORTER_DES) {
-        casesQuery.sort({
-          updateAt: 'desc',
-        });
-      }
+    if (updateAt && typeof updateAt === 'string' && updateAt == SORTER_ASC) {
+      casesQuery.sort({
+        updateAt: 'asc',
+      });
+    } else {
+      casesQuery.sort({
+        updateAt: 'desc',
+      });
     }
 
     const totalQuery = casesQuery.clone().count();
 
-    casesQuery.skip((page - 1) * limit).limit(limit);
+    casesQuery
+      .populate('lastOperator', 'name')
+      .skip((page - 1) * limit)
+      .limit(limit);
 
     const [cases, total] = await Promise.all([
       casesQuery.exec(),
@@ -120,46 +122,7 @@ handler.get(async (req: NextApiRequest, res: NextApiResponse) => {
   }
 });
 
-handler.post(async (req: NextApiRequest, res: NextApiResponse) => {
-  try {
-    const defaultName = `new case on ${moment().format(
-      'YYYY-MM-DD_HH:mm:ss',
-    )} ${getRamdomStr()}`;
-    const {
-      body: { name = defaultName, frames, apis, url, w, h, pid },
-    } = req;
-
-    if (!frames || !pid || !w || !h) {
-      throw new Error('parameter validation failed');
-    }
-
-    await conn();
-    const project = await Project.findOne({
-      seq: pid,
-    });
-    if (!project) {
-      throw new Error('project does not exist');
-    }
-    const caseInstances = await Case.create({
-      name,
-      frames,
-      apis,
-      url,
-      width: w,
-      height: h,
-      project: project._id,
-      category: project.category,
-    });
-    res
-      .status(HttpStatus.OK)
-      .json({ data: { id: caseInstances._id }, code: 0, message: '' });
-  } catch (err: any) {
-    console.log(err);
-    res.status(HttpStatus.BAD_REQUEST).json({ error: err.message });
-  }
-});
-
-handler.put(async (req: NextApiRequest, res: NextApiResponse) => {
+handler.put(async (req: NextApiRequestWithContext, res: NextApiResponse) => {
   try {
     const {
       body: { name, status, id, categoryId },
@@ -169,6 +132,7 @@ handler.put(async (req: NextApiRequest, res: NextApiResponse) => {
     if (!id) {
       throw new Error('id is required');
     }
+
     await Case.updateOne(
       {
         _id: id,
@@ -177,7 +141,8 @@ handler.put(async (req: NextApiRequest, res: NextApiResponse) => {
         name,
         status,
         category: categoryId,
-        lastOperator: 0,
+        lastOperator: req.user?._id,
+        updateAt: new Date(),
       },
     );
     res.status(HttpStatus.OK).json({ data: { id }, code: 0, message: '' });

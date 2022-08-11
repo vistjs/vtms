@@ -10,8 +10,11 @@ import { SORTER_ASC, SORTER_DES } from '@/constant/index';
 import Project from '@/models/project';
 import { getAllSubCategoryId, handleTree } from './util';
 import Case, { CaseStatus } from '@/models/case';
+import auth from '@/middleware/auth';
 
 const handler = nextConnect();
+
+handler.use(auth);
 
 handler.get(async (req: NextApiRequest, res: NextApiResponse) => {
   try {
