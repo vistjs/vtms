@@ -15,13 +15,30 @@ const handler = nextConnect();
 // handler.use(auth);
 handler.use(passport.initialize());
 
+// req.session in set-cookie: {
+//   passport: { user: 'admin' },
+//   createdAt: 1660210495284,
+//   maxAge: 28800
+// }
+
 handler.post(async (req: NextApiRequestWithContext, res: NextApiResponse) => {
   passport.authenticate('local', async (_, user, info) => {
     const { name, cookie: cookieOpts, secret } = sessionOpts;
+    // { passport: { user: 'admin' } }
     if (user) {
-      if (cookieOpts.maxAge && req?.session?.maxAge) {
+      console.log('user in login:', user);
+      console.log('start req.session:', req.session);
+      const { username } = user;
+      if (!req?.session) {
+        req.session = {};
+      }
+      if (username) {
+        req.session.passport = { user: username };
+      }
+      if (cookieOpts.maxAge) {
         req.session.maxAge = cookieOpts.maxAge;
       }
+      console.log('final res session in login:', req?.session);
       const token = await createLoginSession(req.session, secret);
       // 登录成功颁发新的token
       res.setHeader('Set-Cookie', serialize(name, token, cookieOpts));
