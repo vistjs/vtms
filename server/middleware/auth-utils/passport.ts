@@ -7,7 +7,7 @@ import UserModel from '@/models/user';
 import { validatePassword } from './auth';
 
 passport.serializeUser(function (user, done) {
-  // serialize the username into session
+  // serialize the username into req.session
   console.log('user in serializeUser:', user);
   done(null, user.username);
 });
@@ -30,8 +30,10 @@ passport.use(
       console.log('user in db:', user);
 
       if (!user || !validatePassword(user, password)) {
-        // 此时中间件会自动res返回
-        done(null, null);
+        // done 回调的参数会传递到/login/account接口中间件中
+        done(null, null, {
+          message: !user ? 'username does not exist.' : 'password error',
+        });
       } else {
         done(null, user);
       }

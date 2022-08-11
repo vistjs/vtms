@@ -1,40 +1,46 @@
-import type { NextApiRequest, NextApiResponse } from 'next';
+import type { NextApiResponse } from 'next';
+import { serialize } from 'cookie';
 import HttpStatus from 'http-status-codes';
 import nextConnect from 'next-connect';
 
 import type { NextApiRequestWithContext } from '@/types/index';
 
-import conn from '@/lib/mongoose';
-import auth from '@/middleware/auth';
+import auth, { sessionOpts } from '@/middleware/auth';
 import passport from '@/middleware/auth-utils/passport';
+import { createLoginSession } from '@/middleware/auth-utils/auth';
+import { ERROR_NUMBER } from '@/constant/index';
 
 const handler = nextConnect();
 
-handler.use(auth);
+// handler.use(auth);
+handler.use(passport.initialize());
 
-handler.post(
-  passport.authenticate('local'),
-  async (req: NextApiRequestWithContext, res: NextApiResponse) => {
-    try {
-      const {
-        // query: { id },
-        body: { name, password, roles },
-      } = req;
-      await conn();
-      console.log('req.user in login:', req.user);
-
+handler.post(async (req: NextApiRequestWithContext, res: NextApiResponse) => {
+  passport.authenticate('local', async (_, user, info) => {
+    const { name, cookie: cookieOpts, secret } = sessionOpts;
+    if (user) {
+      if (cookieOpts.maxAge && req?.session?.maxAge) {
+        req.session.maxAge = cookieOpts.maxAge;
+      }
+      const token = await createLoginSession(req.session, secret);
+      // 登录成功颁发新的token
+      res.setHeader('Set-Cookie', serialize(name, token, cookieOpts));
       res.status(HttpStatus.OK).json({
-        data: {},
         code: 0,
-        message: '',
-        status: 'ok',
-        currentAuthority: 'admin',
-        type: 'account',
+        message: 'login success !',
       });
-    } catch (err: any) {
-      res.status(HttpStatus.BAD_REQUEST).json({ error: err?.message });
+    } else {
+      res.setHeader(
+        'Set-Cookie',
+        serialize(name, '', { ...cookieOpts, maxAge: 0 }),
+      );
+      res.status(HttpStatus.UNAUTHORIZED).json({
+        code: ERROR_NUMBER.LOGIN_ERROR,
+        message: info?.message || 'login error',
+      });
+      res.end();
     }
-  },
-);
+  })(req, res);
+});
 
 export default handler;

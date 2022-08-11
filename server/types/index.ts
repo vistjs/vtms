@@ -7,4 +7,5 @@ export type NextApiRequestWithFile = NextApiRequest & {
 
 export type NextApiRequestWithContext = NextApiRequest & {
   user?: IUser;
+  session?: { [key: string]: any };
 };

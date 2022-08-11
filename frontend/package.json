@@ -47,6 +47,7 @@
     "@umijs/route-utils": "^2.0.0",
     "antd": "^4.20.0",
     "classnames": "^2.3.0",
+    "http-status-codes": "^2.2.0",
     "lodash": "^4.17.0",
     "moment": "^2.29.0",
     "omit.js": "^2.0.2",

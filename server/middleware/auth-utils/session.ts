@@ -18,12 +18,31 @@ export default function session({ name, secret, cookie: cookieOpts }) {
     const token = cookies[name];
     let unsealed = {};
 
+    if (!token) {
+      console.log('cookies::', cookies);
+      res.setHeader(
+        'Set-Cookie',
+        serialize(name, '', { ...cookieOpts, maxAge: 0 }),
+      );
+      res
+        .status(HttpStatus.UNAUTHORIZED)
+        .json({ code: 0, message: 'no UNAUTHORIZED' });
+      // console.log('----session error----:', err);
+      res.end();
+      return;
+    }
+
     if (token) {
       try {
         // the cookie needs to be unsealed using the password `secret`
         unsealed = await getLoginSession(token, secret);
+        console.log('unsealed by session:', unsealed);
       } catch (err) {
         // The cookie is invalid or expired
+        res.setHeader(
+          'Set-Cookie',
+          serialize(name, '', { ...cookieOpts, maxAge: 0 }),
+        );
         res
           .status(HttpStatus.UNAUTHORIZED)
           .json({ code: 0, message: err?.message });
@@ -42,9 +61,9 @@ export default function session({ name, secret, cookie: cookieOpts }) {
       if (cookieOpts.maxAge) {
         req.session.maxAge = cookieOpts.maxAge;
       }
-
+      // if (req.session?.)
+      console.log('req.session in set-cookie:', req.session);
       const token = await createLoginSession(req.session, secret);
-      console.log('new token:', token);
       // 每次请求颁发新的token
       res.setHeader('Set-Cookie', serialize(name, token, cookieOpts));
       oldEnd.apply(this, args);

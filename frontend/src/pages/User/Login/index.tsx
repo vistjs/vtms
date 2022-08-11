@@ -57,21 +57,21 @@ const Login: React.FC = () => {
       // 登录
       const msg = await login({ ...values, type });
       console.log('msg:', msg);
-      if (msg.status === 'ok') {
+      if (msg?.code === 0) {
         const defaultLoginSuccessMessage = intl.formatMessage({
           id: 'pages.login.success',
           defaultMessage: '登录成功！',
         });
         message.success(defaultLoginSuccessMessage);
         // await fetchUserInfo();
-        const urlParams = new URL(window.location.href).searchParams;
-        console.log('urlParams:', urlParams);
-        history.push(urlParams.get('redirect') || '/');
+        // const urlParams = new URL(window.location.href).searchParams;
+        // console.log('urlParams:', urlParams);
+        history.push('/welcome');
         return;
       }
       console.log(msg);
       // 如果失败去设置用户错误信息
-      setUserLoginState(msg);
+      // setUserLoginState(msg);
     } catch (error) {
       const defaultLoginFailureMessage = intl.formatMessage({
         id: 'pages.login.failure',

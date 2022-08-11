@@ -25,3 +25,7 @@ export const AUTH_ERROR = {
   SESSION_EXPIRED: 'Session expired',
   INVALID_COOKIE: 'The cookie is invalid',
 };
+
+export const ERROR_NUMBER = {
+  LOGIN_ERROR: 10000,
+};
