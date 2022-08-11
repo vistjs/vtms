@@ -16,7 +16,7 @@ interface Case {
   status: CaseStatus;
   runs: number;
   lastRun: Date;
-  lastOperator: number;
+  lastOperator: Schema.Types.ObjectId;
   width: number;
   height: number;
   category: Schema.Types.ObjectId;
@@ -55,7 +55,8 @@ const CaseSchema = new Schema<Case>({
     required: false,
   },
   lastOperator: {
-    type: Number,
+    type: Schema.Types.ObjectId,
+    ref: 'User',
   },
   url: {
     type: String,

@@ -237,8 +237,15 @@ const Cases: React.FC = () => {
     },
     {
       title: '更新人',
-      dataIndex: 'updateUser',
-      valueType: 'text',
+      dataIndex: 'lastOperator',
+      search: false,
+      render: (user: any) => {
+        if (user && user.name) {
+          return user.name;
+        } else {
+          return '-';
+        }
+      },
     },
     {
       title: <FormattedMessage id="pages.searchTable.titleOption" defaultMessage="Operating" />,
