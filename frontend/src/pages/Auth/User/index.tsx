@@ -19,7 +19,7 @@ import {
   ProTable,
   ProFormSelect,
 } from '@ant-design/pro-components';
-import { FormattedMessage, useIntl } from '@umijs/max';
+import { FormattedMessage, useIntl, useModel } from '@umijs/max';
 import { Button, Drawer, Input, message, Modal } from 'antd';
 import React, { useRef, useState } from 'react';
 import { AddUser } from './user';
@@ -111,6 +111,8 @@ const User: React.FC = () => {
    * @en-US The pop-up window of the distribution update window
    * @zh-CN 分布更新窗口的弹窗
    * */
+  const { initialState } = useModel('@@initialState');
+  console.log('initialState:', initialState);
   const [updateModalVisible, handleUpdateModalVisible] = useState<boolean>(false);
 
   const [showDetail, setShowDetail] = useState<boolean>(false);

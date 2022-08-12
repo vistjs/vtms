@@ -8,7 +8,7 @@ const API_PREFIX = '/api/v1';
 export async function currentUser(options?: { [key: string]: any }) {
   return request<{
     data: API.CurrentUser;
-  }>('/api/currentUser', {
+  }>('/api/v1/user/current', {
     method: 'GET',
     ...(options || {}),
   });

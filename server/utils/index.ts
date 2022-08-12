@@ -56,3 +56,16 @@ export function handlePagination(page?: any, limit?: any) {
     limit: number;
   };
 }
+
+export function generateQueryFilter(params: { [key: string]: any }) {
+  let filter: { [key: string]: any } = {};
+  if (params) {
+    Object.keys(params).forEach((itemKey) => {
+      if (params[itemKey] == undefined) {
+        return;
+      }
+      filter[itemKey] = params[itemKey];
+    });
+  }
+  return filter;
+}

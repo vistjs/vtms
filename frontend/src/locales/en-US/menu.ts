@@ -49,4 +49,12 @@ export default {
   'menu.editor.flow': 'Flow Editor',
   'menu.editor.mind': 'Mind Editor',
   'menu.editor.koni': 'Koni Editor',
+  'menu.auth': 'Permission Management',
+  'menu.auth.user': 'User Management',
+
+  'menu.auth.role': 'Role Management',
+  'menu.project': 'Case Management',
+  'menu.project.list': 'Project Management',
+  'menu.project.cases': 'Case Page',
+  'menu.project.mocks': 'Role Page',
 };

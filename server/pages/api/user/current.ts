@@ -35,23 +35,22 @@ handler.get(async (req: NextApiRequestWithContext, res: NextApiResponse) => {
     const {
       query: { current, pageSize },
     } = req;
-    console.log('query:', req?.query);
-    console.log('req.user user in users api:', req.user);
-    const { page = 1, limit = 10 } = handlePagination(current, pageSize);
-    const filter = generateQueryFilter(req?.query);
-    await conn();
-    const [rawUsers, allRoles] = await Promise.all([
-      UserModel.find(filter)
-        .skip((page - 1) * limit)
-        .lean(),
-      RoleModel.find().lean(),
-    ]);
-    const users = addRoleNameToUser(rawUsers, allRoles);
-    const total = users?.length;
+    const user = req?.user;
+    if (user) {
+      console.log('query:', req?.query);
+      // console.log('req.user user in users api:', req.user);
+      // const { page = 1, limit = 10 } = handlePagination(current, pageSize);
+      // const filter = generateQueryFilter(req?.query);
+      await conn();
+      const allRoles = await RoleModel.find().lean();
+      const users = addRoleNameToUser([user], allRoles);
 
-    res
-      .status(HttpStatus.OK)
-      .json({ data: { list: users, total }, code: 0, message: '' });
+      res
+        .status(HttpStatus.OK)
+        .json({ data: { user: users?.[0] }, code: 0, message: '' });
+    } else {
+      res.status(HttpStatus.OK).json({ data: {}, code: 0, message: '' });
+    }
   } catch (err: any) {
     res.status(HttpStatus.BAD_REQUEST).json({ err });
   }
