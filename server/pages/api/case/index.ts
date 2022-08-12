@@ -106,7 +106,7 @@ handler.get(async (req: NextApiRequest, res: NextApiResponse) => {
     const totalQuery = casesQuery.clone().count();
 
     casesQuery
-      .populate('lastOperator', 'name')
+      .populate('lastOperator', 'username')
       .skip((page - 1) * limit)
       .limit(limit);
 

@@ -240,8 +240,8 @@ const Cases: React.FC = () => {
       dataIndex: 'lastOperator',
       search: false,
       render: (user: any) => {
-        if (user && user.name) {
-          return user.name;
+        if (user && user.username) {
+          return user.username;
         } else {
           return '-';
         }
