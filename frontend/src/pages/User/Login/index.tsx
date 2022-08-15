@@ -1,5 +1,6 @@
 import Footer from '@/components/Footer';
 import { login } from '@/services/ant-design-pro/api';
+
 import { getFakeCaptcha } from '@/services/ant-design-pro/login';
 import {
   AlipayCircleOutlined,
@@ -43,11 +44,11 @@ const Login: React.FC = () => {
   const intl = useIntl();
 
   const fetchUserInfo = async () => {
-    const userInfo = await initialState?.fetchUserInfo?.();
-    if (userInfo) {
+    const { user } = await initialState?.fetchUserInfo?.();
+    if (user) {
       await setInitialState((s) => ({
         ...s,
-        currentUser: userInfo,
+        currentUser: user,
       }));
     }
   };
@@ -56,17 +57,16 @@ const Login: React.FC = () => {
     try {
       // 登录
       const msg = await login({ ...values, type });
-      console.log('msg:', msg);
       if (msg?.code === 0) {
         const defaultLoginSuccessMessage = intl.formatMessage({
           id: 'pages.login.success',
           defaultMessage: '登录成功！',
         });
         message.success(defaultLoginSuccessMessage);
-        // await fetchUserInfo();
-        // const urlParams = new URL(window.location.href).searchParams;
-        // console.log('urlParams:', urlParams);
-        history.push('/welcome');
+        await fetchUserInfo();
+        const urlParams = new URL(window.location.href).searchParams;
+        const redirect = urlParams.get('redirect');
+        history.push(redirect || '/welcome');
         return;
       }
       console.log(msg);

@@ -12,7 +12,6 @@ import { ERROR_NUMBER } from '@/constant/index';
 
 const handler = nextConnect();
 
-// handler.use(auth);
 handler.use(passport.initialize());
 
 // req.session in set-cookie: {
