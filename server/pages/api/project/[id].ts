@@ -5,9 +5,11 @@ import { PROJECT_STATUS } from '@/constant/index';
 import HttpStatus from 'http-status-codes';
 import middleware from '../../../middleware/middleware';
 import { newProjectSeq } from '../../../utils';
+import { ROLE_TYPE } from '@/constant/index';
 
 import nextConnect from 'next-connect';
 import Category from '@/models/category';
+import { RoleDb } from '@/models/role';
 import Case, { CaseStatus } from '@/models/case';
 
 const handler = nextConnect();
@@ -30,10 +32,27 @@ handler.put(async (req: NextApiRequest, res: NextApiResponse) => {
         desc,
         seq: seqId,
       });
-      const category = await Category.create({
-        project: doc._id,
-        title: 'all',
-      });
+      const [category, _] = await Promise.all([
+        Category.create({
+          project: doc._id,
+          title: 'all',
+        }),
+        RoleDb.createRoles([
+          {
+            id: '',
+            type: ROLE_TYPE.owner,
+            name: `${name}-owner`,
+            project: doc._id,
+          },
+          {
+            id: '',
+            type: ROLE_TYPE.member,
+            name: `${name}-member`,
+            project: doc._id,
+          },
+        ]),
+      ]);
+
       doc.category = category._id;
       await doc.save();
     } else {
@@ -78,6 +97,7 @@ handler.delete(async (req: NextApiRequest, res: NextApiResponse) => {
       );
     }
     doc.status = PROJECT_STATUS.deleted;
+    await RoleDb.deleteRole(doc._id);
     doc.save();
     res
       .status(HttpStatus.OK)

@@ -25,12 +25,15 @@ export async function newUserSeq() {
   return seqId;
 }
 
-export async function newRoleSeq() {
+export async function newRoleSeq(seqIdCount: number = 1) {
+  if (seqIdCount < 0) {
+    throw new Error('wrong seq seqIdCount');
+  }
   let seqId = 1;
   let seq = await Sequence.findOne({ name: ROLE_SQ }).lean();
   if (seq) {
-    seqId = seq.seq.length + 1;
-    await Sequence.updateOne({ name: ROLE_SQ }, { $push: { seq: 1 } });
+    seqId = seq.seq?.[0] + seqIdCount;
+    await Sequence.updateOne({ name: ROLE_SQ }, { seq: seqId });
   } else {
     await Sequence.create({ name: ROLE_SQ, seq: [1] });
   }
