@@ -115,7 +115,9 @@ const User: React.FC = () => {
   const actionRef = useRef<ActionType>();
   const [currentRow, setCurrentRow] = useState<API.RuleListItem>();
   const [selectedRowsState, setSelectedRows] = useState<API.RuleListItem[]>([]);
+  const { initialState, setInitialState } = useModel('@@initialState');
 
+  console.log('initialState in use list:', initialState);
   /**
    * @en-US International configuration
    * @zh-CN 国际化配置

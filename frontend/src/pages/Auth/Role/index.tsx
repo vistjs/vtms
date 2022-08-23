@@ -92,6 +92,11 @@ const postData = (data) => {
   return data?.list;
 };
 
+enum ModalStatus {
+  Add = 1,
+  Delete,
+}
+
 const User: React.FC = () => {
   /**
    * @en-US Pop-up window of new window
@@ -102,7 +107,12 @@ const User: React.FC = () => {
    * @en-US The pop-up window of the distribution update window
    * @zh-CN 分布更新窗口的弹窗
    * */
-  const [updateModalVisible, handleUpdateModalVisible] = useState<boolean>(false);
+  const [updateModalVisible, setUpdateModalVisible] = useState({
+    visible: false,
+    status: ModalStatus.Add,
+  });
+  const [addUserModalVisible, setAddUserModalVisible] = useState(false);
+  const [deleteUserModalVisible, setDeleteUserModalVisible] = useState(false);
 
   const [showDetail, setShowDetail] = useState<boolean>(false);
 
@@ -127,22 +137,30 @@ const User: React.FC = () => {
       dataIndex: 'desc',
       valueType: 'textarea',
     },
-    // {
-    //   title: <FormattedMessage id="pages.searchTable.titleOption" defaultMessage="Operating" />,
-    //   dataIndex: 'option',
-    //   valueType: 'option',
-    //   render: (_, record) => [
-    //     <a
-    //       key="config"
-    //       onClick={() => {
-    //         handleUpdateModalVisible(true);
-    //         setCurrentRow(record);
-    //       }}
-    //     >
-    //       配置权限
-    //     </a>,
-    //   ],
-    // },
+    {
+      title: <FormattedMessage id="pages.searchTable.titleOption" defaultMessage="Operating" />,
+      dataIndex: 'option',
+      valueType: 'option',
+      render: (_, record) => [
+        <Button
+          type="link"
+          onClick={() => {
+            setAddUserModalVisible(true);
+          }}
+        >
+          增加用户
+        </Button>,
+        <Button
+          type="link"
+          danger
+          onClick={() => {
+            setDeleteUserModalVisible(true);
+          }}
+        >
+          删除用户
+        </Button>,
+      ],
+    },
   ];
 
   return (
@@ -157,33 +175,56 @@ const User: React.FC = () => {
         search={{
           labelWidth: 120,
         }}
-        toolBarRender={() => [
-          <Button
-            type="primary"
-            key="primary"
-            onClick={() => {
-              handleModalVisible(true);
-            }}
-          >
-            <PlusOutlined /> <FormattedMessage id="pages.searchTable.new" defaultMessage="New" />
-          </Button>,
-        ]}
         request={getRoles}
         postData={postData}
         columns={columns}
       />
       <ModalForm
-        title={intl.formatMessage({
-          id: 'pages.searchTable.createForm.newRule',
-          defaultMessage: 'New rule',
-        })}
+        title="Add User"
         width="400px"
-        visible={createModalVisible}
-        onVisibleChange={handleModalVisible}
+        visible={addUserModalVisible}
+        onVisibleChange={(visible) => {
+          setAddUserModalVisible(visible);
+        }}
         onFinish={async (value) => {
           const success = await handleAdd(value as API.RuleListItem);
           if (success) {
-            handleModalVisible(false);
+            setUpdateModalVisible({ visible: false, status: updateModalVisible.status });
+            if (actionRef.current) {
+              actionRef.current.reload();
+            }
+          }
+        }}
+      >
+        <ProFormText
+          rules={[
+            {
+              required: true,
+              message: (
+                <FormattedMessage
+                  id="pages.searchTable.ruleName"
+                  defaultMessage="Rule name is required"
+                />
+              ),
+            },
+          ]}
+          width="md"
+          name="name"
+        />
+        <ProFormTextArea width="md" name="desc" />
+      </ModalForm>
+
+      <ModalForm
+        title="Delete User"
+        width="400px"
+        visible={deleteUserModalVisible}
+        onVisibleChange={(visible) => {
+          setDeleteUserModalVisible(visible);
+        }}
+        onFinish={async (value) => {
+          const success = await handleAdd(value as API.RuleListItem);
+          if (success) {
+            setUpdateModalVisible({ visible: false, status: updateModalVisible.status });
             if (actionRef.current) {
               actionRef.current.reload();
             }

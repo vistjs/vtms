@@ -44,6 +44,7 @@ const Login: React.FC = () => {
   const intl = useIntl();
 
   const fetchUserInfo = async () => {
+    console.log('initialState :', initialState);
     const { user } = await initialState?.fetchUserInfo?.();
     if (user) {
       await setInitialState((s) => ({
