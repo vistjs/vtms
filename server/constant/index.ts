@@ -26,6 +26,16 @@ export const AUTH_ERROR = {
   INVALID_COOKIE: 'The cookie is invalid',
 };
 
-export const ERROR_NUMBER = {
-  LOGIN_ERROR: 10000,
-};
+export enum ErrorShowType {
+  SILENT = 0,
+  WARN_MESSAGE = 1,
+  ERROR_MESSAGE = 2,
+  NOTIFICATION = 3,
+  REDIRECT = 9,
+}
+
+export enum ErrorCode {
+  SUCCESS = 0,
+  COMMON_ERROR = 1,
+  LOGIN_ERROR = 10000,
+}

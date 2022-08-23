@@ -7,6 +7,7 @@ import UserModel from '@/models/user';
 import { newUserSeq } from '@/utils/index';
 import { createUser } from '@/middleware/auth-utils/auth';
 import auth from '@/middleware/auth';
+import { normalizeSuccess, normalizeError } from '@/utils';
 
 const handler = nextConnect();
 
@@ -21,11 +22,9 @@ handler.post(async (req: NextApiRequest, res: NextApiResponse) => {
     const seqId = await newUserSeq();
     const user = createUser({ username, password, name: '' });
     await UserModel.create({ ...user, id: seqId });
-    res
-      .status(HttpStatus.OK)
-      .json({ data: {}, code: 0, message: 'created success !' });
+    normalizeSuccess(res, null, 'created success !');
   } catch (err: any) {
-    res.status(HttpStatus.BAD_REQUEST).json({ error: err?.message });
+    normalizeError(res, err?.message);
   }
 });
 

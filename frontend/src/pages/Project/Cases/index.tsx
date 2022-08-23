@@ -53,7 +53,6 @@ const handleCaseUpdate = async (fields: any) => {
     return true;
   } catch (error: any) {
     hide();
-    message.error(error.response?.data?.error || 'Updated failed, please try again');
     return false;
   }
 };
@@ -67,7 +66,6 @@ const handleCaseDelete = async (selectedRow: CaseListItem) => {
     return true;
   } catch (error: any) {
     hide();
-    message.error(error.response?.data?.error || 'Delete failed, please try again');
     return false;
   }
 };
@@ -81,7 +79,6 @@ const handleCategoryUpdate = async (title: string, id: string) => {
     return true;
   } catch (error: any) {
     hide();
-    message.error(error.response?.data?.error || 'Updated failed, please try again');
     return false;
   }
 };
@@ -95,7 +92,6 @@ const handleCategoryAdd = async (title: string, parentId: string) => {
     return true;
   } catch (error: any) {
     hide();
-    message.error(error.response?.data?.error || 'add failed, please try again');
     return false;
   }
 };
@@ -109,7 +105,6 @@ const handleCategoryDelete = async (categoryId: string) => {
     return true;
   } catch (error: any) {
     hide();
-    message.error(error.response?.data?.error || 'Delete failed, please try again');
     return false;
   }
 };
@@ -413,7 +408,7 @@ const Cases: React.FC = () => {
               labelWidth: 120,
             }}
             request={async (params, option) => {
-              const data = await getCases(
+              const res = await getCases(
                 Object.assign({
                   projectId: query.projectId,
                   categoryId: selectCategoryId.current,
@@ -421,7 +416,7 @@ const Cases: React.FC = () => {
                 }),
                 option,
               );
-              return data;
+              return { data: res?.data?.list, total: res?.data?.total, success: true };
             }}
             columns={columns}
           />

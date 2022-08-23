@@ -1,0 +1,7 @@
+/scripts
+public
+.next
+mock
+.*
+*.js
+*.ts

@@ -1,5 +1,13 @@
 import Sequence from '@/models/sequence';
-import { PROJECT_SQ, USER_SQ, ROLE_SQ } from '@/constant/index';
+import type { NextApiRequest, NextApiResponse } from 'next';
+import HttpStatus from 'http-status-codes';
+import {
+  PROJECT_SQ,
+  USER_SQ,
+  ROLE_SQ,
+  ErrorCode,
+  ErrorShowType,
+} from '@/constant';
 
 export async function newProjectSeq() {
   let seqId = 1;
@@ -71,4 +79,48 @@ export function generateQueryFilter(params: { [key: string]: any }) {
     });
   }
   return filter;
+}
+
+interface ResponseStructure {
+  data: any;
+  code: ErrorCode;
+  message: string;
+  errorMessage?: string;
+  showType?: ErrorShowType;
+}
+
+export function normalizeResult(
+  data: any,
+  code: ErrorCode,
+  message = '',
+  errorMessage?: string,
+  showType?: ErrorShowType,
+): ResponseStructure {
+  const res: ResponseStructure = { data, code, message };
+  if (typeof errorMessage !== 'undefined') {
+    res.errorMessage = errorMessage;
+  }
+  if (typeof showType !== 'undefined') {
+    res.showType = showType;
+  }
+  return res;
+}
+
+export function normalizeSuccess(
+  res: NextApiResponse,
+  data: any,
+  message = '',
+) {
+  res.status(HttpStatus.OK).json(normalizeResult(data, ErrorCode.SUCCESS));
+}
+
+export function normalizeError(
+  res: NextApiResponse,
+  errorMessage = '',
+  code = ErrorCode.COMMON_ERROR,
+  showType = ErrorShowType.ERROR_MESSAGE,
+) {
+  res
+    .status(HttpStatus.OK)
+    .json(normalizeResult(null, code, '', errorMessage, showType));
 }

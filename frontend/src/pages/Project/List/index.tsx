@@ -2,13 +2,13 @@ import { useState } from 'react';
 import { PlusOutlined } from '@ant-design/icons';
 import { Button, Card, List, Typography } from 'antd';
 import { useRequest, request, Link } from '@umijs/max';
-import { queryFakeList } from '@/services/ant-design-pro/api';
 import {
   ModalForm,
   ProFormText,
   ProFormTextArea,
   ProFormUploadButton,
   PageContainer,
+  ProFormSelect,
 } from '@ant-design/pro-components';
 import { message } from 'antd';
 import type { CardListItemDataType } from './data';
@@ -113,23 +113,24 @@ const CardList = () => {
                   }
                   modalProps={{ destroyOnClose: true }}
                   onFinish={async (values: any) => {
+                    const formData = new FormData();
+                    formData.append('name', values.name);
+                    formData.append('desc', values.desc || '');
+                    formData.append('logo', (values.logo && values.logo[0]?.thumbUrl) || '');
                     try {
-                      const formData = new FormData();
-                      formData.append('name', values.name);
-                      formData.append('desc', values.desc || '');
-                      formData.append('logo', (values.logo && values.logo[0]?.thumbUrl) || '');
                       await request<Record<string, any>>('/api/v1/project/create', {
                         method: 'PUT',
                         data: formData,
                         requestType: 'form',
                       }).then((res) => {
                         console.log('res: ', res);
-                        message.success('提交成功');
+                        message.success('创建成功');
                       });
-                    } catch (error) {
-                      console.log(error);
+                      run();
+                      return true;
+                    } catch (e) {
+                      return false;
                     }
-                    return true;
                   }}
                 >
                   <ProFormText
@@ -171,16 +172,20 @@ const CardList = () => {
           formData.append('name', values.name);
           formData.append('desc', values.desc || '');
           formData.append('logo', values.logo[0]?.thumbUrl || '');
-          await request<Record<string, any>>(`/api/v1/project/${(editing as any).seq}`, {
-            method: 'PUT',
-            data: formData,
-            requestType: 'form',
-          }).then((res) => {
-            console.log('res: ', res);
-            message.success('提交成功');
-          });
-          run();
-          return true;
+          try {
+            await request<Record<string, any>>(`/api/v1/project/${(editing as any).seq}`, {
+              method: 'PUT',
+              data: formData,
+              requestType: 'form',
+            }).then((res) => {
+              console.log('res: ', res);
+              message.success('修改成功');
+            });
+            run();
+            return true;
+          } catch (e) {
+            return false;
+          }
         }}
       >
         <ProFormText
@@ -199,6 +204,26 @@ const CardList = () => {
             name: 'file',
             listType: 'picture-card',
           }}
+        />
+        <ProFormSelect
+          name="owner"
+          label="管理员"
+          valueEnum={{
+            open: '未解决',
+            closed: '已解决',
+          }}
+          fieldProps={{ showSearch: true }}
+          placeholder="Please select"
+        />
+        <ProFormSelect
+          name="member"
+          label="项目成员"
+          valueEnum={{
+            open: '未解决',
+            closed: '已解决',
+          }}
+          fieldProps={{ showSearch: true }}
+          placeholder="Please select"
         />
       </ModalForm>
     </PageContainer>

@@ -14,12 +14,6 @@
     ],
   },
   {
-    path: '/welcome',
-    name: 'welcome',
-    icon: 'smile',
-    component: './Welcome',
-  },
-  {
     path: '/auth',
     name: 'auth',
     icon: 'team',
@@ -56,11 +50,6 @@
         hideInMenu: true,
       },
       {
-        path: '/project/mocks',
-        name: 'mocks',
-        component: './Project/Mocks',
-      },
-      {
         component: './404',
       },
     ],
@@ -85,7 +74,7 @@
   },
   {
     path: '/',
-    redirect: '/welcome',
+    redirect: '/project/list',
   },
   {
     component: './404',

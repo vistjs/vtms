@@ -8,6 +8,8 @@ interface IProject {
   logo?: string;
   status?: number;
   category: Schema.Types.ObjectId;
+  ownerRole: Schema.Types.ObjectId;
+  memberRole: Schema.Types.ObjectId;
   createAt?: number;
   updateAt?: number;
 }
@@ -21,6 +23,14 @@ const projectSchema = new Schema<IProject>(
     category: {
       type: Schema.Types.ObjectId,
       ref: 'Category',
+    },
+    ownerRole: {
+      type: Schema.Types.ObjectId,
+      ref: 'Role',
+    },
+    memberRole: {
+      type: Schema.Types.ObjectId,
+      ref: 'Role',
     },
     status: { type: Number, default: PROJECT_STATUS.enable },
   },

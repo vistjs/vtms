@@ -5,6 +5,7 @@ import auth from '@/middleware/auth';
 
 import HttpStatus from 'http-status-codes';
 import nextConnect from 'next-connect';
+import { normalizeSuccess, normalizeError } from '@/utils';
 
 const handler = nextConnect();
 
@@ -18,16 +19,12 @@ handler.delete(async (req: NextApiRequest, res: NextApiResponse) => {
     await conn();
     const { deletedCount } = await UserModel.deleteOne({ id });
     if (deletedCount) {
-      res
-        .status(HttpStatus.OK)
-        .json({ data: { id }, code: 0, message: 'delete success.' });
+      normalizeSuccess(res, { id }, 'delete success.');
     } else {
-      res
-        .status(HttpStatus.OK)
-        .json({ data: { id }, code: 0, message: `not found ${id}.` });
+      normalizeSuccess(res, { id }, `not found ${id}.`);
     }
   } catch (err: any) {
-    res.status(HttpStatus.BAD_REQUEST).json({ err });
+    normalizeError(res, err?.message);
   }
 });
 

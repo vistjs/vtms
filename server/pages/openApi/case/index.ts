@@ -5,6 +5,7 @@ import HttpStatus from 'http-status-codes';
 import moment from 'moment';
 import nextConnect from 'next-connect';
 import Project from '@/models/project';
+import { normalizeSuccess, normalizeError } from '@/utils';
 
 const handler = nextConnect();
 const getRamdomStr = () => Math.random().toString(36).slice(2);
@@ -39,12 +40,11 @@ handler.post(async (req: NextApiRequest, res: NextApiResponse) => {
       project: project._id,
       category: project.category,
     });
-    res
-      .status(HttpStatus.OK)
-      .json({ data: { id: caseInstances._id }, code: 0, message: '' });
+
+    normalizeSuccess(res, { id: caseInstances._id });
   } catch (err: any) {
     console.log(err);
-    res.status(HttpStatus.BAD_REQUEST).json({ error: err.message });
+    normalizeError(res, err?.message);
   }
 });
 

@@ -11,6 +11,7 @@ import Project from '@/models/project';
 import { getAllSubCategoryId, handleTree } from './util';
 import Case, { CaseStatus } from '@/models/case';
 import auth from '@/middleware/auth';
+import { normalizeSuccess, normalizeError } from '@/utils';
 
 const handler = nextConnect();
 
@@ -30,10 +31,10 @@ handler.get(async (req: NextApiRequest, res: NextApiResponse) => {
     const categories = await Category.find({ project: project._id });
     const categoryTree = handleTree(categories);
 
-    res.status(HttpStatus.OK).json({ data: categoryTree, message: '' });
+    normalizeSuccess(res, categoryTree);
   } catch (err: any) {
     console.log(err);
-    res.status(HttpStatus.BAD_REQUEST).json({ error: err.message });
+    normalizeError(res, err.message);
   }
 });
 
@@ -56,11 +57,9 @@ handler.post(async (req: NextApiRequest, res: NextApiResponse) => {
       project: category.project,
     });
 
-    res
-      .status(HttpStatus.OK)
-      .json({ data: categoryInstances, code: 0, message: '' });
+    normalizeSuccess(res, categoryInstances);
   } catch (err: any) {
-    res.status(HttpStatus.BAD_REQUEST).json({ error: err.message });
+    normalizeError(res, err.message);
   }
 });
 
@@ -78,9 +77,9 @@ handler.put(async (req: NextApiRequest, res: NextApiResponse) => {
       },
     );
 
-    res.status(HttpStatus.OK).json({ data: { id }, code: 0, message: '' });
+    normalizeSuccess(res, { id });
   } catch (err: any) {
-    res.status(HttpStatus.BAD_REQUEST).json({ error: err.message });
+    normalizeError(res, err.message);
   }
 });
 
@@ -130,9 +129,9 @@ handler.delete(async (req: NextApiRequest, res: NextApiResponse) => {
       });
     }
 
-    res.status(HttpStatus.OK).json({ data: {}, code: 0, message: '' });
+    normalizeSuccess(res, null);
   } catch (err: any) {
-    res.status(HttpStatus.BAD_REQUEST).json({ error: err.message });
+    normalizeError(res, err.message);
   }
 });
 

@@ -3,12 +3,13 @@ import { serialize } from 'cookie';
 import HttpStatus from 'http-status-codes';
 import nextConnect from 'next-connect';
 
-import type { NextApiRequestWithContext } from '@/types/index';
+import type { NextApiRequestWithContext } from '@/types';
 
 import auth, { sessionOpts } from '@/middleware/auth';
 import passport from '@/middleware/auth-utils/passport';
 import { createLoginSession } from '@/middleware/auth-utils/auth';
-import { ERROR_NUMBER } from '@/constant/index';
+import { ErrorCode } from '@/constant';
+import { normalizeSuccess, normalizeError } from '@/utils';
 
 const handler = nextConnect();
 
@@ -41,19 +42,18 @@ handler.post(async (req: NextApiRequestWithContext, res: NextApiResponse) => {
       const token = await createLoginSession(req.session, secret);
       // 登录成功颁发新的token
       res.setHeader('Set-Cookie', serialize(name, token, cookieOpts));
-      res.status(HttpStatus.OK).json({
-        code: 0,
-        message: 'login success !',
-      });
+      normalizeSuccess(res, null, 'login success !');
     } else {
       res.setHeader(
         'Set-Cookie',
         serialize(name, '', { ...cookieOpts, maxAge: 0 }),
       );
-      res.status(HttpStatus.UNAUTHORIZED).json({
-        code: ERROR_NUMBER.LOGIN_ERROR,
-        message: info?.message || 'login error',
-      });
+
+      normalizeError(
+        res,
+        info?.message || 'login error',
+        ErrorCode.LOGIN_ERROR,
+      );
       res.end();
     }
   })(req, res);
