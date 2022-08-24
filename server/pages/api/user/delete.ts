@@ -14,14 +14,14 @@ handler.use(auth);
 handler.delete(async (req: NextApiRequest, res: NextApiResponse) => {
   try {
     const {
-      body: { id },
+      body: { username },
     } = req;
     await conn();
-    const { deletedCount } = await UserModel.deleteOne({ id });
+    const { deletedCount } = await UserModel.deleteOne({ username });
     if (deletedCount) {
-      normalizeSuccess(res, { id }, 'delete success.');
+      normalizeSuccess(res, { username }, 'delete success.');
     } else {
-      normalizeSuccess(res, { id }, `not found ${id}.`);
+      normalizeSuccess(res, { username }, `not found ${username}.`);
     }
   } catch (err: any) {
     normalizeError(res, err?.message);

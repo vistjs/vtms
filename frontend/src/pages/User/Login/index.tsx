@@ -67,7 +67,7 @@ const Login: React.FC = () => {
         await fetchUserInfo();
         const urlParams = new URL(window.location.href).searchParams;
         const redirect = urlParams.get('redirect');
-        history.push(redirect || '/welcome');
+        history.push(redirect || '/project/list');
         return;
       }
       console.log(msg);

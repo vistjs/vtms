@@ -9,6 +9,9 @@ import {
   ErrorShowType,
 } from '@/constant';
 
+import { ResponseUser } from '@/models/user';
+import { IRole } from '@/models/role';
+
 export async function newProjectSeq() {
   let seqId = 1;
   let seq = await Sequence.findOne({ name: PROJECT_SQ }).lean();
@@ -123,4 +126,23 @@ export function normalizeError(
   res
     .status(HttpStatus.OK)
     .json(normalizeResult(null, code, '', errorMessage, showType));
+}
+
+export function addRoleNameToUser(
+  users: ResponseUser[],
+  roles: IRole[],
+): ResponseUser[] {
+  const roleIdMap = new Map();
+  roles?.forEach((role) => {
+    const { id: roleId } = role;
+    if (!roleIdMap.has(roleId)) {
+      roleIdMap.set(roleId, role);
+    }
+  });
+  users.forEach((user) => {
+    user.roles = roles.filter((role) => {
+      return role.users?.includes(user._id);
+    });
+  });
+  return users;
 }

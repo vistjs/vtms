@@ -27,8 +27,6 @@ passport.use(
       await conn();
       const user = await UserModel.findOne({ username }).exec();
 
-      console.log('user in db:', user);
-
       if (!user || !validatePassword(user, password)) {
         // done 回调的参数会传递到/login/account接口中间件中
         done(null, null, {

@@ -32,7 +32,6 @@ export function createUser({ username, password, name }) {
     .pbkdf2Sync(password, salt, 1000, 64, 'sha512')
     .toString('hex');
   const user = {
-    id: '',
     // createdAt: Date.now(),
     username,
     name,

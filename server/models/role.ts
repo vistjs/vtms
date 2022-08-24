@@ -1,4 +1,4 @@
-import { Schema, models, model } from 'mongoose';
+import { Schema, models, model, Types } from 'mongoose';
 
 import conn from '@/lib/mongoose';
 import { ROLE_TYPE } from '@/constant/index';
@@ -9,7 +9,7 @@ export interface IRole {
   name: string;
   type: ROLE_TYPE;
   project?: Schema.Types.ObjectId;
-  users?: Schema.Types.ObjectId[];
+  users?: Types.ObjectId[];
   desc?: string;
 }
 

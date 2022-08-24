@@ -1,33 +1,36 @@
-import { Schema, models, model } from 'mongoose';
+import { Schema, models, model, Types } from 'mongoose';
+import { HydratedDocument } from 'mongoose';
 
 import conn from '@/lib/mongoose';
 import { newUserSeq } from '@/utils/index';
-
+import { IRole } from './role';
 export interface InputUser {
   username: string;
   password: string;
   name?: string;
 }
 export interface IUser {
-  id: string;
   // createdAt: number,
   username: string;
   name: string;
   hash: string;
   salt: string;
   // password: string;
-  roles?: string[];
+}
+
+export type DocumentIUser = HydratedDocument<IUser>;
+
+export interface ResponseUser extends DocumentIUser {
+  roles?: IRole[];
 }
 
 const userSchema = new Schema<IUser>(
   {
-    id: { type: String, required: true, unique: true },
     username: { type: String, required: true, unique: true },
     name: { type: String, required: false },
     hash: { type: String, required: true },
     salt: { type: String, required: true, unique: true },
     // password: { type: String, maxLength: 10 },
-    roles: { type: [String], default: [] },
   },
   { timestamps: true },
 );
@@ -39,8 +42,8 @@ const UserModel = models.User || model<IUser>('User', userSchema);
 export const userDb = {
   async createUser(user: IUser) {
     await conn();
-    const seqId = await newUserSeq();
-    const userDoc = await UserModel.create({ ...user, id: seqId });
+    // const seqId = await newUserSeq();
+    const userDoc = await UserModel.create(user);
     return userDoc;
   },
 

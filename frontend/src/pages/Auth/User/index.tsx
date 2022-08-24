@@ -32,12 +32,12 @@ const { confirm } = Modal;
  * @param fields
  */
 
-const handleAdd = async (fields: AddUser) => {
+const handleAdd = async (fields: Auth.AddUser) => {
   const hide = message.loading('正在添加');
   console.log('fields:', fields);
-  const { username, password, roles } = fields;
+  const { username, password } = fields;
   try {
-    await addUser({ username, password, roles });
+    await addUser({ username, password });
     hide();
     message.success('Added successfully');
     return true;
@@ -64,28 +64,6 @@ const handleUpdate = async (fields: any) => {
     hide();
 
     message.success('Configuration is successful');
-    return true;
-  } catch (error) {
-    hide();
-    return false;
-  }
-};
-
-/**
- *  Delete node
- * @zh-CN 删除节点
- *
- * @param selectedRows
- */
-const handleRemove = async (selectedRows: API.RuleListItem[]) => {
-  const hide = message.loading('正在删除');
-  if (!selectedRows) return true;
-  try {
-    await removeRule({
-      key: selectedRows.map((row) => row.key),
-    });
-    hide();
-    message.success('Deleted successfully and will refresh soon');
     return true;
   } catch (error) {
     hide();
@@ -124,7 +102,7 @@ const User: React.FC = () => {
    * */
   const intl = useIntl();
 
-  const columns: ProColumns<API.User>[] = [
+  const columns: ProColumns<Auth.User>[] = [
     {
       title: '用户名',
       dataIndex: 'username',
@@ -146,6 +124,7 @@ const User: React.FC = () => {
       valueType: 'option',
       render: (_, record) => [
         <Button
+          disabled={record.username === 'admin'}
           onClick={() => {
             confirm({
               title: 'Are you sure delete this user?',
@@ -155,7 +134,7 @@ const User: React.FC = () => {
               okType: 'danger',
               cancelText: 'No',
               async onOk() {
-                const success = await deleteUser({ id: record.id });
+                const success = await deleteUser({ username: record.username });
                 if (success) {
                   handleModalVisible(false);
                   if (actionRef.current) {
@@ -178,7 +157,7 @@ const User: React.FC = () => {
 
   return (
     <PageContainer>
-      <ProTable<API.User, API.PageParams>
+      <ProTable<Auth.User, Auth.PageParams>
         headerTitle={intl.formatMessage({
           id: 'pages.searchTable.title',
           defaultMessage: 'Enquiry form',
@@ -211,16 +190,13 @@ const User: React.FC = () => {
         width="400px"
         visible={createModalVisible}
         onVisibleChange={handleModalVisible}
-        onFinish={async (value) => {
+        onFinish={async (value: Auth.AddUser) => {
           console.log('value::', value);
           const { username, password } = value;
-          let roles = value?.roles?.map((item) => item?.value);
-          console.log('roles:', roles);
           const success = await handleAdd({
             username,
             password,
-            roles,
-          } as AddUser);
+          });
           if (success) {
             handleModalVisible(false);
             if (actionRef.current) {
@@ -261,7 +237,7 @@ const User: React.FC = () => {
           name="password"
           label="Password"
         />
-        <ProFormSelect.SearchSelect
+        {/* <ProFormSelect.SearchSelect
           name="roles"
           label="Roles"
           fieldProps={{
@@ -274,7 +250,7 @@ const User: React.FC = () => {
           request={async ({ keyWords = '' }) => {
             return [{ value: '11', label: 'CRM Owner' }];
           }}
-        />
+        /> */}
       </ModalForm>
     </PageContainer>
   );
