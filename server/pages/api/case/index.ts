@@ -37,7 +37,7 @@ handler.get(async (req: NextApiRequest, res: NextApiResponse) => {
       throw new Error('projectId is number');
     }
 
-    const { page, limit } = handlePagination(current, pageSize);
+    const { offset, limit } = handlePagination(current, pageSize);
 
     await conn();
     const project = await Project.findOne({
@@ -106,10 +106,7 @@ handler.get(async (req: NextApiRequest, res: NextApiResponse) => {
 
     const totalQuery = casesQuery.clone().count();
 
-    casesQuery
-      .populate('lastOperator', 'username')
-      .skip((page - 1) * limit)
-      .limit(limit);
+    casesQuery.populate('lastOperator', 'username').skip(offset).limit(limit);
 
     const [cases, total] = await Promise.all([
       casesQuery.exec(),
