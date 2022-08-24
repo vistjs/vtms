@@ -30,7 +30,7 @@ handler.post(async (req: NextApiRequest, res: NextApiResponse) => {
     if (!project) {
       throw new Error('project does not exist');
     }
-    const caseInstances = await Case.create({
+    const caseInstance = await Case.create({
       name,
       frames,
       apis,
@@ -41,10 +41,29 @@ handler.post(async (req: NextApiRequest, res: NextApiResponse) => {
       category: project.category,
     });
 
-    normalizeSuccess(res, { id: caseInstances._id });
+    normalizeSuccess(res, { id: caseInstance._id });
   } catch (err: any) {
     console.log(err);
     normalizeError(res, err?.message);
+  }
+});
+
+handler.get(async (req: NextApiRequest, res: NextApiResponse) => {
+  try {
+    const {
+      query: { id },
+    } = req;
+
+    await conn();
+
+    const caseInstance = await Case.findOne({
+      _id: id,
+    });
+
+    normalizeSuccess(res, { case: caseInstance });
+  } catch (err: any) {
+    console.log(err);
+    normalizeError(res, err.message);
   }
 });
 
