@@ -11,7 +11,10 @@ const handler = nextConnect();
 handler.get(async (req: NextApiRequest, res: NextApiResponse) => {
   try {
     await conn();
-    const docs = await Project.find({ status: PROJECT_STATUS.enable }).lean();
+    const docs = await Project.find({ status: PROJECT_STATUS.enable })
+      .populate('ownerRole')
+      .populate('memberRole')
+      .lean();
     normalizeSuccess(res, { list: docs });
   } catch (err: any) {
     normalizeError(res, err.message);

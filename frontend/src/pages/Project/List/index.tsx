@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { PlusOutlined } from '@ant-design/icons';
 import { Button, Card, List, Typography } from 'antd';
-import { useRequest, request, Link } from '@umijs/max';
+import { useRequest, request, Link, useAccess, Access } from '@umijs/max';
 import {
   ModalForm,
   ProFormText,
@@ -17,14 +17,30 @@ import styles from './style.less';
 const { Paragraph } = Typography;
 
 const CardList = () => {
+  const access = useAccess();
+
   const { data, run, loading } = useRequest(() => {
     return request<Record<string, any>>('/api/v1/projects');
   });
 
+  const { data: users } = useRequest(() => {
+    return request<Record<string, any>>('/api/v1/user/all');
+  });
+
+  const usersSelects = Object.fromEntries(
+    users?.list?.map((item: any) => [item._id, item.username]) || [],
+  );
+
   const [updateVisible, setUpdateVisible] = useState(false);
   const [editing, setEditing] = useState({});
 
-  const list = data?.list || [];
+  const list = (data?.list || []).map((item: any) => {
+    return {
+      ...item,
+      owners: item?.ownerRole?.users,
+      members: item?.memberRole?.users,
+    };
+  });
 
   const changeUpdate = (index: number) => {
     setEditing(list[index - 1]);
@@ -76,17 +92,21 @@ const CardList = () => {
                     className={styles.card}
                     actions={[
                       <Link to={`/project/${item.seq}/cases`}>详情</Link>,
-                      <a
-                        key="option2"
-                        onClick={() => {
-                          changeUpdate(index);
-                        }}
-                      >
-                        修改
-                      </a>,
-                      <a key="option3" onClick={() => deleteItem(item.seq as number)}>
-                        删除
-                      </a>,
+                      <Access accessible={access.canEditProject(item.owners)} fallback={null}>
+                        <a
+                          key="option2"
+                          onClick={() => {
+                            changeUpdate(index);
+                          }}
+                        >
+                          修改
+                        </a>
+                      </Access>,
+                      <Access accessible={access.canAdmin} fallback={null}>
+                        <a key="option3" onClick={() => deleteItem(item.seq as number)}>
+                          删除
+                        </a>
+                      </Access>,
                     ]}
                   >
                     <Card.Meta
@@ -172,6 +192,8 @@ const CardList = () => {
           formData.append('name', values.name);
           formData.append('desc', values.desc || '');
           formData.append('logo', values.logo[0]?.thumbUrl || '');
+          formData.append('owners', (values.owners || []).join(','));
+          formData.append('members', (values.members || []).join(','));
           try {
             await request<Record<string, any>>(`/api/v1/project/${(editing as any).seq}`, {
               method: 'PUT',
@@ -206,23 +228,17 @@ const CardList = () => {
           }}
         />
         <ProFormSelect
-          name="owner"
+          name="owners"
           label="管理员"
-          valueEnum={{
-            open: '未解决',
-            closed: '已解决',
-          }}
-          fieldProps={{ showSearch: true }}
+          valueEnum={usersSelects}
+          fieldProps={{ showSearch: true, mode: 'multiple' }}
           placeholder="Please select"
         />
         <ProFormSelect
-          name="member"
+          name="members"
           label="项目成员"
-          valueEnum={{
-            open: '未解决',
-            closed: '已解决',
-          }}
-          fieldProps={{ showSearch: true }}
+          valueEnum={usersSelects}
+          fieldProps={{ showSearch: true, mode: 'multiple' }}
           placeholder="Please select"
         />
       </ModalForm>

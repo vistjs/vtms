@@ -1,29 +1,31 @@
 import type { NextApiRequest, NextApiResponse } from 'next';
 import conn from '@/lib/mongoose';
-import Project from '@/models/project';
+import Project, { IProject } from '@/models/project';
 import { PROJECT_STATUS, ROLE_TYPE, ErrorCode } from '@/constant/index';
-import HttpStatus from 'http-status-codes';
-import middleware from '../../../middleware/middleware';
 import { newProjectSeq, normalizeResult } from '@/utils';
-
+import mongoose, { HydratedDocument, Schema } from 'mongoose';
 import nextConnect from 'next-connect';
 import Category from '@/models/category';
-import { RoleDb } from '@/models/role';
+import Role, { RoleDb } from '@/models/role';
 import Case, { CaseStatus } from '@/models/case';
-
+import auth from '@/middleware/auth';
+import multipartFormParser from '@/middleware/multipart-form-parser';
 import { normalizeSuccess, normalizeError } from '@/utils';
 
 const handler = nextConnect();
 
-handler.use(middleware);
+handler.use(multipartFormParser);
+
+handler.use(auth);
 
 handler.put(async (req: NextApiRequest, res: NextApiResponse) => {
   try {
     const {
       query: { id },
-      body: { name, desc, logo },
+      body: { name, desc, logo, owners, members },
     } = req;
     await conn();
+    // let doc: HydratedDocument<IProject>;
     let doc;
     if (id === 'create') {
       const seqId = await newProjectSeq();
@@ -33,7 +35,7 @@ handler.put(async (req: NextApiRequest, res: NextApiResponse) => {
         desc,
         seq: seqId,
       });
-      const [category, _] = await Promise.all([
+      const [category, roles] = await Promise.all([
         Category.create({
           project: doc._id,
           title: 'all',
@@ -43,24 +45,40 @@ handler.put(async (req: NextApiRequest, res: NextApiResponse) => {
             id: '',
             type: ROLE_TYPE.owner,
             name: `${name}-owner`,
-            project: doc._id,
+            project: doc._id as unknown as Schema.Types.ObjectId,
           },
           {
             id: '',
             type: ROLE_TYPE.member,
             name: `${name}-member`,
-            project: doc._id,
+            project: doc._id as unknown as Schema.Types.ObjectId,
           },
         ]),
       ]);
 
       doc.category = category._id;
+      doc.ownerRole = roles[0]._id;
+      doc.memberRole = roles[1]._id;
       await doc.save();
     } else {
+      const ownerUsers = (owners ? owners.split(',') : []).map(
+        (id: string) => new mongoose.Types.ObjectId(id),
+      );
+      const memberUsers = (members ? members.split(',') : []).map(
+        (id: string) => new mongoose.Types.ObjectId(id),
+      );
       doc = await Project.findOneAndUpdate(
         { seq: Number(id) },
         { name, logo, desc },
         { new: true, upsert: true },
+      );
+      await Role.findOneAndUpdate(
+        { _id: doc.ownerRole },
+        { $set: { users: ownerUsers } },
+      );
+      await Role.findOneAndUpdate(
+        { _id: doc.memberRole },
+        { $set: { users: memberUsers } },
       );
     }
 

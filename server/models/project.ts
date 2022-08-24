@@ -1,7 +1,7 @@
 import { Schema, models, model } from 'mongoose';
 import { PROJECT_STATUS } from '../constant';
 
-interface IProject {
+export interface IProject {
   name: string;
   seq: number;
   desc?: string;
@@ -40,5 +40,4 @@ const projectSchema = new Schema<IProject>(
 projectSchema.index({ name: 1 });
 
 const Project = models.Project || model<IProject>('Project', projectSchema);
-
 export default Project;
