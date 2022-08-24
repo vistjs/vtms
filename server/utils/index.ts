@@ -51,7 +51,13 @@ export async function newRoleSeq(seqIdCount: number = 1) {
   return seqId;
 }
 
-export function handlePagination(page?: any, limit?: any) {
+export function handlePagination(
+  page?: any,
+  limit?: any,
+): {
+  limit: number;
+  offset: number;
+} {
   if (page && typeof page === 'string' && typeof parseInt(page) === 'number') {
     page = parseInt(page);
   }
@@ -63,11 +69,8 @@ export function handlePagination(page?: any, limit?: any) {
     limit = parseInt(limit);
   }
   return {
-    page,
     limit,
-  } as {
-    page: number;
-    limit: number;
+    offset: (page - 1) * limit,
   };
 }
 
