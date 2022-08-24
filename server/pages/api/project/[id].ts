@@ -1,7 +1,7 @@
 import type { NextApiRequest, NextApiResponse } from 'next';
 import conn from '@/lib/mongoose';
 import Project, { IProject } from '@/models/project';
-import { PROJECT_STATUS, ROLE_TYPE, ErrorCode } from '@/constant/index';
+import { PROJECT_STATUS, ROLE_TYPE, ErrorCode } from '@/constant';
 import { newProjectSeq, normalizeResult } from '@/utils';
 import mongoose, { HydratedDocument, Schema } from 'mongoose';
 import nextConnect from 'next-connect';
@@ -11,6 +11,7 @@ import Case, { CaseStatus } from '@/models/case';
 import auth from '@/middleware/auth';
 import multipartFormParser from '@/middleware/multipart-form-parser';
 import { normalizeSuccess, normalizeError } from '@/utils';
+import type { NextApiRequestWithContext } from '@/types';
 
 const handler = nextConnect();
 
@@ -18,7 +19,7 @@ handler.use(multipartFormParser);
 
 handler.use(auth);
 
-handler.put(async (req: NextApiRequest, res: NextApiResponse) => {
+handler.put(async (req: NextApiRequestWithContext, res: NextApiResponse) => {
   try {
     const {
       query: { id },
@@ -61,12 +62,18 @@ handler.put(async (req: NextApiRequest, res: NextApiResponse) => {
       doc.memberRole = roles[1]._id;
       await doc.save();
     } else {
-      const ownerUsers = (owners ? owners.split(',') : []).map(
+      const ownerArr = owners ? owners.split(',') : [];
+      const memberArr = members ? members.split(',') : [];
+      if (!ownerArr.includes(req.user?._id.toString())) {
+        throw Error('No permission');
+      }
+      const ownerUsers = ownerArr.map(
         (id: string) => new mongoose.Types.ObjectId(id),
       );
-      const memberUsers = (members ? members.split(',') : []).map(
+      const memberUsers = memberArr.map(
         (id: string) => new mongoose.Types.ObjectId(id),
       );
+
       doc = await Project.findOneAndUpdate(
         { seq: Number(id) },
         { name, logo, desc },
@@ -89,7 +96,7 @@ handler.put(async (req: NextApiRequest, res: NextApiResponse) => {
   }
 });
 
-handler.delete(async (req: NextApiRequest, res: NextApiResponse) => {
+handler.delete(async (req: NextApiRequestWithContext, res: NextApiResponse) => {
   try {
     const {
       query: { id },
