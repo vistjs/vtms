@@ -1,7 +1,7 @@
 export type Member = {
   avatar: string;
-  name: string;
-  id: string;
+  username: string;
+  _id: string;
 };
 
 export type CardListItemDataType = {
@@ -12,5 +12,6 @@ export type CardListItemDataType = {
   updatedAt: number;
   createdAt: number;
   desc: string;
-  members: Member[];
+  members: string[];
+  owners: string[];
 };

@@ -23,6 +23,12 @@ const roleSchema = new Schema<IRole>(
       required: true,
       ref: 'Project',
     },
+    users: [
+      {
+        type: Schema.Types.ObjectId,
+        ref: 'User',
+      },
+    ],
     desc: { type: String, required: false },
   },
   { timestamps: true },
