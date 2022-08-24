@@ -1,16 +1,17 @@
 import type { NextApiRequest, NextApiResponse } from 'next';
 import conn from '@/lib/mongoose';
 import Project from '@/models/project';
-import { PROJECT_STATUS } from '@/constant/index';
+import { PROJECT_STATUS, ROLE_TYPE, ErrorCode } from '@/constant/index';
 import HttpStatus from 'http-status-codes';
 import middleware from '../../../middleware/middleware';
-import { newProjectSeq } from '../../../utils';
-import { ROLE_TYPE } from '@/constant/index';
+import { newProjectSeq, normalizeResult } from '@/utils';
 
 import nextConnect from 'next-connect';
 import Category from '@/models/category';
 import { RoleDb } from '@/models/role';
 import Case, { CaseStatus } from '@/models/case';
+
+import { normalizeSuccess, normalizeError } from '@/utils';
 
 const handler = nextConnect();
 
@@ -62,12 +63,11 @@ handler.put(async (req: NextApiRequest, res: NextApiResponse) => {
         { new: true, upsert: true },
       );
     }
-    res
-      .status(HttpStatus.OK)
-      .json({ data: { id: doc.seq }, code: 0, message: '' });
+
+    normalizeSuccess(res, { id: doc.seq });
   } catch (err: any) {
     console.log(err);
-    res.status(HttpStatus.BAD_REQUEST).json({ error: err.message });
+    normalizeError(res, err.message);
   }
 });
 
@@ -99,11 +99,9 @@ handler.delete(async (req: NextApiRequest, res: NextApiResponse) => {
     doc.status = PROJECT_STATUS.deleted;
     await RoleDb.deleteRole(doc._id);
     doc.save();
-    res
-      .status(HttpStatus.OK)
-      .json({ data: { id: doc.seq }, code: 0, message: '' });
+    normalizeSuccess(res, { id: doc.seq });
   } catch (err: any) {
-    res.status(HttpStatus.BAD_REQUEST).json({ error: err.message });
+    normalizeError(res, err.message);
   }
 });
 

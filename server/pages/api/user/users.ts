@@ -9,6 +9,7 @@ import UserModel, { IUser } from '@/models/user';
 import RoleModel, { IRole } from '@/models/role';
 import auth from '@/middleware/auth';
 import { handlePagination, generateQueryFilter } from '@/utils/index';
+import { normalizeSuccess, normalizeError } from '@/utils';
 
 const handler = nextConnect();
 
@@ -52,12 +53,9 @@ handler.get(async (req: NextApiRequestWithContext, res: NextApiResponse) => {
       hash: undefined,
     }));
     const total = users?.length;
-
-    res
-      .status(HttpStatus.OK)
-      .json({ data: { list: users, total }, code: 0, message: '' });
+    normalizeSuccess(res, { list: users, total });
   } catch (err: any) {
-    res.status(HttpStatus.BAD_REQUEST).json({ err });
+    normalizeError(res, err?.message);
   }
 });
 

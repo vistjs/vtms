@@ -2,6 +2,8 @@ import { parse, serialize } from 'cookie';
 import HttpStatus from 'http-status-codes';
 
 import { createLoginSession, getLoginSession } from './auth';
+import { ErrorCode } from '@/constant';
+import { normalizeSuccess, normalizeError } from '@/utils';
 
 function parseCookies(req) {
   // For API Routes we don't need to parse the cookies.
@@ -24,9 +26,7 @@ export default function session({ name, secret, cookie: cookieOpts }) {
         'Set-Cookie',
         serialize(name, '', { ...cookieOpts, maxAge: 0 }),
       );
-      res
-        .status(HttpStatus.UNAUTHORIZED)
-        .json({ code: 0, message: 'no UNAUTHORIZED' });
+      normalizeError(res, 'no UNAUTHORIZED', ErrorCode.LOGIN_ERROR);
       // console.log('----session error----:', err);
       res.end();
       return;
@@ -43,9 +43,9 @@ export default function session({ name, secret, cookie: cookieOpts }) {
           'Set-Cookie',
           serialize(name, '', { ...cookieOpts, maxAge: 0 }),
         );
-        res
-          .status(HttpStatus.UNAUTHORIZED)
-          .json({ code: 0, message: err?.message });
+
+        normalizeError(res, err?.message, ErrorCode.LOGIN_ERROR);
+
         console.log('----session error----:', err);
         res.end();
       }

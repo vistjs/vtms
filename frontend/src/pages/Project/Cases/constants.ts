@@ -18,10 +18,10 @@ export type CaseListItem = {
 };
 
 export type CaseList = {
-  data?: CaseListItem[];
-  /** 列表的内容总数 */
-  total?: number;
-  success?: boolean;
+  data?: {
+    total?: number;
+    list?: CaseListItem[];
+  };
 };
 
 export enum caseStatus {

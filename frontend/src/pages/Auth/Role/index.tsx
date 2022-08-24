@@ -40,7 +40,6 @@ const handleAdd = async (fields: API.RuleListItem) => {
     return true;
   } catch (error) {
     hide();
-    message.error('Adding failed, please try again!');
     return false;
   }
 };
@@ -65,7 +64,6 @@ const handleUpdate = async (fields: any) => {
     return true;
   } catch (error) {
     hide();
-    message.error('Configuration failed, please try again!');
     return false;
   }
 };
@@ -88,7 +86,6 @@ const handleRemove = async (selectedRows: API.RuleListItem[]) => {
     return true;
   } catch (error) {
     hide();
-    message.error('Delete failed, please try again');
     return false;
   }
 };

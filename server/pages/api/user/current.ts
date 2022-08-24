@@ -9,6 +9,7 @@ import UserModel, { IUser } from '@/models/user';
 import RoleModel, { IRole } from '@/models/role';
 import auth from '@/middleware/auth';
 import { handlePagination, generateQueryFilter } from '@/utils/index';
+import { normalizeSuccess, normalizeError } from '@/utils';
 
 const handler = nextConnect();
 
@@ -45,14 +46,12 @@ handler.get(async (req: NextApiRequestWithContext, res: NextApiResponse) => {
       const allRoles = await RoleModel.find().lean();
       const users = addRoleNameToUser([user], allRoles);
 
-      res
-        .status(HttpStatus.OK)
-        .json({ data: { user: users?.[0] }, code: 0, message: '' });
+      normalizeSuccess(res, { user: users?.[0] });
     } else {
-      res.status(HttpStatus.OK).json({ data: {}, code: 0, message: '' });
+      normalizeSuccess(res, {});
     }
   } catch (err: any) {
-    res.status(HttpStatus.BAD_REQUEST).json({ err });
+    normalizeError(res, err?.message);
   }
 });
 

@@ -4,6 +4,7 @@ import nextConnect from 'next-connect';
 import { serialize } from 'cookie';
 
 import { sessionOpts } from '@/middleware/auth';
+import { normalizeSuccess, normalizeError } from '@/utils';
 
 const handler = nextConnect();
 
@@ -15,11 +16,9 @@ handler.post(async (_: NextApiRequest, res: NextApiResponse) => {
       'Set-Cookie',
       serialize(name, '', { ...cookieOpts, maxAge: 0 }),
     );
-    res
-      .status(HttpStatus.OK)
-      .json({ data: {}, code: 0, message: 'logout success !' });
+    normalizeSuccess(res, null, 'logout success !');
   } catch (err: any) {
-    res.status(HttpStatus.BAD_REQUEST).json({ error: err?.message });
+    normalizeError(res, err?.message);
   }
 });
 

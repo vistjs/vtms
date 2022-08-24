@@ -10,6 +10,7 @@ import { getAllSubCategoryId } from '../category/util';
 import Project from '@/models/project';
 import auth from '@/middleware/auth';
 import type { NextApiRequestWithContext } from '@/types/index';
+import { normalizeSuccess, normalizeError } from '@/utils';
 
 const handler = nextConnect();
 
@@ -115,10 +116,10 @@ handler.get(async (req: NextApiRequest, res: NextApiResponse) => {
       totalQuery.exec(),
     ]);
 
-    res.status(HttpStatus.OK).json({ data: cases, total, message: '' });
+    normalizeSuccess(res, { list: cases, total });
   } catch (err: any) {
     console.log(err);
-    res.status(HttpStatus.BAD_REQUEST).json({ error: err.message });
+    normalizeError(res, err.message);
   }
 });
 
@@ -145,10 +146,10 @@ handler.put(async (req: NextApiRequestWithContext, res: NextApiResponse) => {
         updateAt: new Date(),
       },
     );
-    res.status(HttpStatus.OK).json({ data: { id }, code: 0, message: '' });
+    normalizeSuccess(res, { id });
   } catch (err: any) {
     console.log(err);
-    res.status(HttpStatus.BAD_REQUEST).json({ error: err.message });
+    normalizeError(res, err.message);
   }
 });
 
@@ -169,10 +170,10 @@ handler.delete(async (req: NextApiRequest, res: NextApiResponse) => {
         status: CaseStatus.DELETE,
       },
     );
-    res.status(HttpStatus.OK).json({ data: { id }, code: 0, message: '' });
+    normalizeSuccess(res, { id });
   } catch (err: any) {
     console.log(err);
-    res.status(HttpStatus.BAD_REQUEST).json({ error: err.message });
+    normalizeError(res, err.message);
   }
 });
 

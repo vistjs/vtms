@@ -1,11 +1,11 @@
 module.exports = {
-  "extends": "next/core-web-vitals",
+  extends: 'next/core-web-vitals',
   settings: {
     'import/resolver': {
       alias: {
-        map: [['@/lib', './lib'], ['@/constant', './constant'], ['@/models', './models']],
+        map: [['@', './']],
         extensions: ['.tsx', '.ts', '.jsx', '.js'],
       },
     },
   },
-}
+};

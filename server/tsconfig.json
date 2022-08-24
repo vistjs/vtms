@@ -16,12 +16,7 @@
     "incremental": true,
     "baseUrl": "./",
     "paths": {
-      "@/constant/*": ["./constant/*"],
-      "@/lib/*": ["./lib/*"],
-      "@/models/*": ["./models/*"],
-      "@/utils/*": ["./utils/*"],
-      "@/middleware/*": ["./middleware/*"],
-      "@/types/*": ["./types/*"]
+      "@/*": ["./*"]
     }
   },
 
