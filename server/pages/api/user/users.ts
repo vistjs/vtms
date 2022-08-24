@@ -46,7 +46,11 @@ handler.get(async (req: NextApiRequestWithContext, res: NextApiResponse) => {
         .lean(),
       RoleModel.find().lean(),
     ]);
-    const users = addRoleNameToUser(rawUsers, allRoles);
+    const users = addRoleNameToUser(rawUsers, allRoles)?.map((user) => ({
+      ...user,
+      salt: undefined,
+      hash: undefined,
+    }));
     const total = users?.length;
 
     res

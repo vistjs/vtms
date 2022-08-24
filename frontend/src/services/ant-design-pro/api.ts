@@ -142,6 +142,13 @@ export async function addRole(data: { [key: string]: any }) {
   });
 }
 
+export async function updateRole(data: { [key: string]: any }) {
+  return request<API.RuleListItem>('/api/v1/role/create', {
+    method: 'POST',
+    data,
+  });
+}
+
 /** 删除规则 DELETE /api/rule */
 export async function removeRule(options?: { [key: string]: any }) {
   return request<Record<string, any>>('/api/rule', {

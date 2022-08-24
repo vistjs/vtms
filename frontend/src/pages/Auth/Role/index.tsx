@@ -5,6 +5,7 @@ import {
   updateRule,
   getRoles,
   addRole,
+  getUsers,
 } from '@/services/ant-design-pro/api';
 import { PlusOutlined } from '@ant-design/icons';
 import type { ActionType, ProColumns, ProDescriptionsItemProps } from '@ant-design/pro-components';
@@ -18,10 +19,12 @@ import {
   ProTable,
 } from '@ant-design/pro-components';
 import { FormattedMessage, useIntl } from '@umijs/max';
-import { Button, Drawer, Input, message } from 'antd';
-import React, { useRef, useState } from 'react';
+import { Button, Drawer, Input, message, Select } from 'antd';
+import React, { useEffect, useRef, useState } from 'react';
 
 import { IRole } from './constants';
+
+const { Option } = Select;
 
 /**
  * @en-US Add node
@@ -100,7 +103,7 @@ enum ModalStatus {
   Delete,
 }
 
-const User: React.FC = () => {
+const Role: React.FC = () => {
   /**
    * @en-US Pop-up window of new window
    * @zh-CN 新建窗口的弹窗
@@ -122,6 +125,9 @@ const User: React.FC = () => {
   const actionRef = useRef<ActionType>();
   const [currentRow, setCurrentRow] = useState<API.RuleListItem>();
   const [selectedRowsState, setSelectedRows] = useState<API.RuleListItem[]>([]);
+
+  const [users, setUsers] = useState<API.User[]>([]);
+  const [addUserId, setAddUserId] = useState<string>();
 
   /**
    * @en-US International configuration
@@ -166,6 +172,35 @@ const User: React.FC = () => {
     },
   ];
 
+  const handleSearch = (newValue: string) => {
+    if (newValue) {
+      // fetch(newValue, setData);
+    } else {
+      // setData([]);
+    }
+  };
+
+  useEffect(() => {
+    getUsers({}).then((users) => {
+      console.log('users users in roles page:', users);
+      if (users.data?.list?.length) {
+        setUsers(users.data.list);
+      }
+      // setUsers(users)
+    });
+  }, []);
+
+  const options = users?.map((user) => <Option key={user.id}>{user.username}</Option>);
+
+  // const onSearch = (value: string) => {
+  //   console.log('search:', value);
+  // };
+
+  const onChange = (userId: string) => {
+    console.log(`selected userId: ${userId}`);
+    setAddUserId(userId);
+  };
+
   return (
     <PageContainer>
       <ProTable<API.RuleListItem, API.PageParams>
@@ -199,22 +234,22 @@ const User: React.FC = () => {
           }
         }}
       >
-        <ProFormText
-          rules={[
-            {
-              required: true,
-              message: (
-                <FormattedMessage
-                  id="pages.searchTable.ruleName"
-                  defaultMessage="Rule name is required"
-                />
-              ),
-            },
-          ]}
-          width="md"
-          name="name"
-        />
-        <ProFormTextArea width="md" name="desc" />
+        <Select
+          style={{ width: 200 }}
+          showSearch
+          allowClear
+          placeholder="Select a user"
+          optionFilterProp="children"
+          onChange={onChange}
+          // onSearch={onSearch}
+          filterOption={(input, option) => {
+            return (option!.children as unknown as string)
+              .toLowerCase()
+              .includes(input.toLowerCase());
+          }}
+        >
+          {options}
+        </Select>
       </ModalForm>
 
       <ModalForm
@@ -279,4 +314,4 @@ const User: React.FC = () => {
   );
 };
 
-export default User;
+export default Role;

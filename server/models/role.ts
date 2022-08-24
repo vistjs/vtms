@@ -8,7 +8,8 @@ export interface IRole {
   id: string;
   name: string;
   type: ROLE_TYPE;
-  project: Schema.Types.ObjectId;
+  project?: Schema.Types.ObjectId;
+  users?: Schema.Types.ObjectId[];
   desc?: string;
 }
 
