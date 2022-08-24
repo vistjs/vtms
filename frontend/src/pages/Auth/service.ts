@@ -71,6 +71,13 @@ export async function deleteUser(data: { [key: string]: any }) {
   });
 }
 
+export async function updateUser(data: { [key: string]: any }) {
+  return request<Auth.User>('/api/v1/user/update', {
+    method: 'PUT',
+    data,
+  });
+}
+
 /**获取角色 */
 export async function getRoles(
   params: {
