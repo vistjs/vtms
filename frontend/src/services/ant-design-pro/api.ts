@@ -7,8 +7,8 @@ const API_PREFIX = '/api/v1';
 /** 获取当前的用户 GET /api/currentUser */
 export async function currentUser(options?: { [key: string]: any }) {
   return request<{
-    data: API.CurrentUser;
-  }>('/api/v1/user/current', {
+    data: Auth.CurrentUser;
+  }>(`${API_PREFIX}/user/current`, {
     method: 'GET',
     ...(options || {}),
   });
@@ -93,7 +93,7 @@ export async function addUser(data: { [key: string]: any }) {
 
 /**删除用户 */
 export async function deleteUser(data: { [key: string]: any }) {
-  return request<API.User>('/api/v1/user/delete', {
+  return request<Auth.User>('/api/v1/user/delete', {
     method: 'DELETE',
     data,
   });
@@ -110,7 +110,7 @@ export async function getRoles(
   },
   options?: { [key: string]: any },
 ) {
-  return request<API.RuleList>(`${API_PREFIX}/role/roles`, {
+  return request<Auth.Role[]>(`${API_PREFIX}/role/roles`, {
     method: 'GET',
     params: {
       ...params,

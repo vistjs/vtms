@@ -3,7 +3,6 @@ import conn from '@/lib/mongoose';
 import RoleModel, { IRole } from '@/models/role';
 import auth from '@/middleware/auth';
 
-import HttpStatus from 'http-status-codes';
 import nextConnect from 'next-connect';
 import { normalizeSuccess, normalizeError } from '@/utils';
 
@@ -22,8 +21,7 @@ handler.get(async (req: NextApiRequest, res: NextApiResponse) => {
     const docs = await RoleModel.find().lean();
     normalizeSuccess(res, { list: docs, total: docs.length });
   } catch (err: any) {
-    console.log('err:', err);
-    normalizeError(res, 'ffff');
+    normalizeError(res, 'get roles failed');
   }
 });
 

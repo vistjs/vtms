@@ -16,13 +16,15 @@ declare namespace Auth {
   interface AddUser {
     username: string;
     password: string;
+    isAdmin: boolean;
   }
 
   interface User {
-    id: string;
     name: string;
     password: string;
     username?: string;
+    isAdmin: boolean;
+    _id: string;
     roles?: Role[];
   }
 

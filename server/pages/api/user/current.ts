@@ -23,13 +23,16 @@ handler.get(async (req: NextApiRequestWithContext, res: NextApiResponse) => {
     const user = req?.user;
     if (user) {
       await conn();
-      const allRoles = await RoleModel.find().lean();
-      const users = addRoleNameToUser(
-        [user as ResponseUser],
-        allRoles as IRole[],
-      );
-
-      normalizeSuccess(res, { user: users?.[0] });
+      // const allRoles = await RoleModel.find().lean();
+      // const users = addRoleNameToUser(
+      //   [user as ResponseUser],
+      //   allRoles as IRole[],
+      // );
+      console.log('user in current api::', user);
+      const { username, name, isAdmin, _id } = user;
+      normalizeSuccess(res, {
+        user: { username, name, isAdmin, _id },
+      });
     } else {
       normalizeSuccess(res, {});
     }

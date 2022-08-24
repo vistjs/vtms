@@ -9,6 +9,7 @@ import type { RunTimeLayoutConfig, RequestConfig } from '@umijs/max';
 import { history, Link } from '@umijs/max';
 import defaultSettings from '../config/defaultSettings';
 import { currentUser as queryCurrentUser } from './services/ant-design-pro/api';
+import { ErrorCode } from '@/constant';
 
 const isDev = process.env.NODE_ENV === 'development';
 const loginPath = '/user/login';
@@ -18,9 +19,9 @@ const loginPath = '/user/login';
  * */
 export async function getInitialState(): Promise<{
   settings?: Partial<LayoutSettings>;
-  currentUser?: API.CurrentUser;
+  currentUser?: Auth.User;
   loading?: boolean;
-  fetchUserInfo?: () => Promise<API.CurrentUser | undefined>;
+  fetchUserInfo?: () => Promise<Auth.User | undefined>;
 }> {
   const fetchUserInfo = async () => {
     try {
@@ -138,6 +139,10 @@ export const request: RequestConfig = {
         const errorInfo: ResponseStructure | undefined = error.info;
         if (errorInfo) {
           const { errorMessage, code } = errorInfo;
+          if (code === ErrorCode.NO_PERMISSION) {
+            history.push('/');
+            return;
+          }
           switch (errorInfo.showType) {
             case ErrorShowType.SILENT:
               // do nothing
