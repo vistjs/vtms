@@ -1,7 +1,6 @@
 import type { NextApiRequest, NextApiResponse } from 'next';
 import conn from '@/lib/mongoose';
 import Project from '@/models/project';
-import HttpStatus from 'http-status-codes';
 import nextConnect from 'next-connect';
 import { PROJECT_STATUS } from '@/constant';
 import { normalizeSuccess, normalizeError } from '@/utils';
