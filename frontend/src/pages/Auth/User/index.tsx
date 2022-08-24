@@ -17,12 +17,11 @@ import {
   ProFormText,
   ProFormTextArea,
   ProTable,
-  ProFormSelect,
+  ProFormCheckbox,
 } from '@ant-design/pro-components';
 import { FormattedMessage, useIntl, useModel } from '@umijs/max';
 import { Button, Drawer, Input, message, Modal } from 'antd';
 import React, { useRef, useState } from 'react';
-import { AddUser } from './user';
 
 const { confirm } = Modal;
 
@@ -32,38 +31,18 @@ const { confirm } = Modal;
  * @param fields
  */
 
+interface InputAddUser extends Omit<Auth.AddUser, 'isAdmin'> {
+  isAdmin: string[];
+}
+
 const handleAdd = async (fields: Auth.AddUser) => {
   const hide = message.loading('正在添加');
   console.log('fields:', fields);
-  const { username, password } = fields;
+  const { username, password, isAdmin } = fields;
   try {
-    await addUser({ username, password });
+    await addUser({ username, password, isAdmin });
     hide();
     message.success('Added successfully');
-    return true;
-  } catch (error) {
-    hide();
-    return false;
-  }
-};
-
-/**
- * @en-US Update node
- * @zh-CN 更新节点
- *
- * @param fields
- */
-const handleUpdate = async (fields: any) => {
-  const hide = message.loading('Configuring');
-  try {
-    await updateRule({
-      name: fields.name,
-      desc: fields.desc,
-      key: fields.key,
-    });
-    hide();
-
-    message.success('Configuration is successful');
     return true;
   } catch (error) {
     hide();
@@ -77,22 +56,9 @@ const postData = (data) => {
 };
 
 const User: React.FC = () => {
-  /**
-   * @en-US Pop-up window of new window
-   * @zh-CN 新建窗口的弹窗
-   *  */
   const [createModalVisible, handleModalVisible] = useState<boolean>(false);
-  /**
-   * @en-US The pop-up window of the distribution update window
-   * @zh-CN 分布更新窗口的弹窗
-   * */
-  const [updateModalVisible, handleUpdateModalVisible] = useState<boolean>(false);
-
-  const [showDetail, setShowDetail] = useState<boolean>(false);
 
   const actionRef = useRef<ActionType>();
-  const [currentRow, setCurrentRow] = useState<API.RuleListItem>();
-  const [selectedRowsState, setSelectedRows] = useState<API.RuleListItem[]>([]);
   const { initialState, setInitialState } = useModel('@@initialState');
 
   console.log('initialState in use list:', initialState);
@@ -124,7 +90,7 @@ const User: React.FC = () => {
       valueType: 'option',
       render: (_, record) => [
         <Button
-          disabled={record.username === 'admin'}
+          disabled={!record.isAdmin}
           onClick={() => {
             confirm({
               title: 'Are you sure delete this user?',
@@ -190,12 +156,12 @@ const User: React.FC = () => {
         width="400px"
         visible={createModalVisible}
         onVisibleChange={handleModalVisible}
-        onFinish={async (value: Auth.AddUser) => {
-          console.log('value::', value);
-          const { username, password } = value;
+        onFinish={async (value: InputAddUser) => {
+          const { username, password, isAdmin } = value;
           const success = await handleAdd({
             username,
             password,
+            isAdmin: isAdmin?.length > 0 && isAdmin[0] === 'Yes',
           });
           if (success) {
             handleModalVisible(false);
@@ -237,20 +203,12 @@ const User: React.FC = () => {
           name="password"
           label="Password"
         />
-        {/* <ProFormSelect.SearchSelect
-          name="roles"
-          label="Roles"
-          fieldProps={{
-            labelInValue: true,
-            style: {
-              minWidth: 140,
-            },
-          }}
-          debounceTime={300}
-          request={async ({ keyWords = '' }) => {
-            return [{ value: '11', label: 'CRM Owner' }];
-          }}
-        /> */}
+        <ProFormCheckbox.Group
+          name="isAdmin"
+          layout="vertical"
+          label="Is Admin"
+          options={['Yes']}
+        />
       </ModalForm>
     </PageContainer>
   );

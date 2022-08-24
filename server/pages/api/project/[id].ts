@@ -43,13 +43,11 @@ handler.put(async (req: NextApiRequestWithContext, res: NextApiResponse) => {
         }),
         RoleDb.createRoles([
           {
-            id: '',
             type: ROLE_TYPE.owner,
             name: `${name}-owner`,
             project: doc._id as unknown as Schema.Types.ObjectId,
           },
           {
-            id: '',
             type: ROLE_TYPE.member,
             name: `${name}-member`,
             project: doc._id as unknown as Schema.Types.ObjectId,

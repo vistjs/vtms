@@ -10,6 +10,12 @@ import { normalizeSuccess, normalizeError, handlePagination } from '@/utils';
 const handler = nextConnect();
 const getRamdomStr = () => Math.random().toString(36).slice(2);
 
+handler.use(async (req, res, next) => {
+  res.setHeader('Access-Control-Allow-Origin', '*');
+  res.setHeader('Access-Control-Allow-Methods', 'POST, GET, OPTIONS, PUT');
+  next();
+});
+
 handler.post(async (req: NextApiRequest, res: NextApiResponse) => {
   try {
     const defaultName = `new case on ${moment().format(

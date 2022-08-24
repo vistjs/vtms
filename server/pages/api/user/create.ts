@@ -15,7 +15,7 @@ handler.use(auth);
 handler.post(async (req: NextApiRequest, res: NextApiResponse) => {
   try {
     const {
-      body: { username, password },
+      body: { username, password, isAdmin },
     } = req;
     await conn();
     const user = createUser({
@@ -23,7 +23,7 @@ handler.post(async (req: NextApiRequest, res: NextApiResponse) => {
       password,
       name: username.replace(username[0], username[0].toUpperCase()),
     });
-    await UserModel.create({ ...user });
+    await UserModel.create({ ...user, isAdmin });
     normalizeSuccess(res, null, 'created success !');
   } catch (err: any) {
     normalizeError(res, err?.message);
