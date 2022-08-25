@@ -1,4 +1,4 @@
-import { getUsers, addUser, deleteUser, updateUser } from '../service';
+import { getUsersApi, addUser, deleteUser, updateUser } from '../service';
 import { PlusOutlined, ExclamationCircleOutlined } from '@ant-design/icons';
 import type { ActionType, ProColumns } from '@ant-design/pro-components';
 import {
@@ -26,7 +26,6 @@ interface InputAddUser extends Omit<Auth.AddUser, 'isAdmin'> {
 
 const handleAdd = async (fields: Auth.AddUser) => {
   const hide = message.loading('正在添加');
-  console.log('fields:', fields);
   const { username, password, isAdmin } = fields;
   try {
     await addUser({ username, password, isAdmin });
@@ -55,7 +54,6 @@ const handleUpdate = async (fields: Auth.AddUser) => {
 };
 
 const postData = (data) => {
-  console.log('data:', data);
   return data?.list;
 };
 
@@ -90,6 +88,7 @@ const User: React.FC = () => {
     {
       title: '是否Admin',
       dataIndex: 'isAdmin',
+      search: false,
       render(_, record) {
         return record?.isAdmin ? 'Yes' : 'No';
       },
@@ -172,7 +171,7 @@ const User: React.FC = () => {
             <PlusOutlined /> <FormattedMessage id="pages.searchTable.new" defaultMessage="New" />
           </Button>,
         ]}
-        request={getUsers}
+        request={getUsersApi}
         postData={postData}
         columns={columns}
       />

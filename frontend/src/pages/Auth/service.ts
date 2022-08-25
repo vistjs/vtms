@@ -36,13 +36,14 @@ export async function login(body: Auth.LoginParams, options?: { [key: string]: a
 }
 
 /**获取用户 */
-export async function getUsers(
+export async function getUsersApi(
   params: {
     // query
     /** 当前的页码 */
     current?: number;
     /** 页面的容量 */
     pageSize?: number;
+    [keyword: string]: any;
   },
   options?: { [key: string]: any },
 ) {
