@@ -1,18 +1,15 @@
 import { getUsers, addUser, deleteUser, updateUser } from '../service';
 import { PlusOutlined, ExclamationCircleOutlined } from '@ant-design/icons';
-import type { ActionType, ProColumns, ProDescriptionsItemProps } from '@ant-design/pro-components';
+import type { ActionType, ProColumns } from '@ant-design/pro-components';
 import {
-  FooterToolbar,
   ModalForm,
   PageContainer,
-  ProDescriptions,
   ProFormText,
-  ProFormTextArea,
   ProTable,
   ProFormCheckbox,
 } from '@ant-design/pro-components';
 import { FormattedMessage, useIntl, useModel } from '@umijs/max';
-import { Button, Drawer, Input, message, Modal, Form } from 'antd';
+import { Button, message, Modal, Form } from 'antd';
 import React, { useRef, useState } from 'react';
 
 const { confirm } = Modal;
@@ -86,9 +83,6 @@ const User: React.FC = () => {
     {
       title: '角色',
       dataIndex: 'roles',
-      // valueType: (record) => {
-      //   return 'ddd';
-      // },
       render(_, record) {
         return record?.roles?.map((role) => role?.name).join(',');
       },
@@ -96,9 +90,6 @@ const User: React.FC = () => {
     {
       title: '是否Admin',
       dataIndex: 'isAdmin',
-      // valueType: (record) => {
-      //   return 'ddd';
-      // },
       render(_, record) {
         return record?.isAdmin ? 'Yes' : 'No';
       },
@@ -110,6 +101,7 @@ const User: React.FC = () => {
       valueType: 'option',
       render: (_, record) => [
         <Button
+          key={'delete'}
           disabled={!initialState?.currentUser?.isAdmin}
           onClick={() => {
             confirm({
@@ -138,6 +130,7 @@ const User: React.FC = () => {
           Delete
         </Button>,
         <Button
+          key={'update'}
           disabled={!initialState?.currentUser?.isAdmin}
           onClick={() => {
             setUpdateModalVisible(true);
@@ -163,12 +156,13 @@ const User: React.FC = () => {
           defaultMessage: 'Enquiry form',
         })}
         actionRef={actionRef}
-        rowKey="id"
+        rowKey="username"
         search={{
           labelWidth: 120,
         }}
         toolBarRender={() => [
           <Button
+            disabled={!initialState?.currentUser?.isAdmin}
             type="primary"
             key="primary"
             onClick={() => {

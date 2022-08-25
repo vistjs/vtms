@@ -147,7 +147,7 @@ const Role: React.FC = () => {
           defaultMessage: 'Enquiry form',
         })}
         actionRef={actionRef}
-        rowKey="id"
+        rowKey="_id"
         search={{
           labelWidth: 120,
         }}

@@ -2,14 +2,15 @@ import type { NextApiRequest, NextApiResponse } from 'next';
 import conn from '@/lib/mongoose';
 import UserModel from '@/models/user';
 import auth from '@/middleware/auth';
+import userIsAdminAuth from '@/middleware/user';
 
-import HttpStatus from 'http-status-codes';
 import nextConnect from 'next-connect';
 import { normalizeSuccess, normalizeError } from '@/utils';
 
 const handler = nextConnect();
 
 handler.use(auth);
+handler.use(userIsAdminAuth);
 
 handler.delete(async (req: NextApiRequest, res: NextApiResponse) => {
   try {

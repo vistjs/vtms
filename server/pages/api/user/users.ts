@@ -1,5 +1,4 @@
 import type { NextApiRequest, NextApiResponse } from 'next';
-import HttpStatus from 'http-status-codes';
 import nextConnect from 'next-connect';
 
 import type { NextApiRequestWithContext } from '@/types/index';
@@ -20,13 +19,11 @@ handler.get(async (req: NextApiRequestWithContext, res: NextApiResponse) => {
     const {
       query: { current, pageSize },
     } = req;
-    const { page = 1, limit = 10 } = handlePagination(current, pageSize);
+    const { offset = 0, limit = 10 } = handlePagination(current, pageSize);
     const filter = generateQueryFilter(req?.query);
     await conn();
     const [rawUsers, allRoles] = await Promise.all([
-      UserModel.find(filter)
-        .skip((page - 1) * limit)
-        .lean(),
+      UserModel.find(filter).skip(offset).limit(limit).lean(),
       RoleModel.find().lean(),
     ]);
     const users = addRoleNameToUser(

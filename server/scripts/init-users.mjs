@@ -90,6 +90,7 @@ async function main() {
       username: 'admin',
       password: '12345',
       id: '1',
+      isAdmin: true,
       name: 'Admin',
     });
     const user = await userDb.createUser(adminUser);

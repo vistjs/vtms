@@ -140,6 +140,7 @@ export const request: RequestConfig = {
         if (errorInfo) {
           const { errorMessage, code } = errorInfo;
           if (code === ErrorCode.NO_PERMISSION) {
+            errorMessage && message.error(errorMessage);
             history.push('/');
             return;
           }
