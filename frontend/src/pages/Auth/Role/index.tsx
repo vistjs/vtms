@@ -1,4 +1,4 @@
-import { removeRule, updateRule, getRoles, addRole, getUsers } from '@/services/ant-design-pro/api';
+import { getRoles, addRole, getUsersApi } from '../service';
 import { PlusOutlined } from '@ant-design/icons';
 import type { ActionType, ProColumns, ProDescriptionsItemProps } from '@ant-design/pro-components';
 import {
@@ -118,15 +118,15 @@ const Role: React.FC = () => {
     }
   };
 
-  useEffect(() => {
-    getUsers({}).then((users) => {
-      console.log('users users in roles page:', users);
-      if (users.data?.list?.length) {
-        setUsers(users.data.list);
-      }
-      // setUsers(users)
-    });
-  }, []);
+  // useEffect(() => {
+  //   getUsersApi({}).then((users) => {
+  //     console.log('users users in roles page:', users);
+  //     if (users.data?.list?.length) {
+  //       setUsers(users.data.list);
+  //     }
+  //     // setUsers(users)
+  //   });
+  // }, []);
 
   const options = users?.map((user) => <Option key={user.id}>{user.username}</Option>);
 
