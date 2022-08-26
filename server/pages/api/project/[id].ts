@@ -62,7 +62,7 @@ handler.put(async (req: NextApiRequestWithContext, res: NextApiResponse) => {
     } else {
       const ownerArr = owners ? owners.split(',') : [];
       const memberArr = members ? members.split(',') : [];
-      if (!ownerArr.includes(req.user?._id.toString())) {
+      if (!req.user?.isAdmin && !ownerArr.includes(req.user?._id.toString())) {
         throw Error('No permission');
       }
       const ownerUsers = ownerArr.map(

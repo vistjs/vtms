@@ -127,9 +127,11 @@ const CardList = () => {
                 <ModalForm
                   width={480}
                   trigger={
-                    <Button type="dashed" className={styles.newButton}>
-                      <PlusOutlined /> 新增项目
-                    </Button>
+                    <Access accessible={access.canAdmin} fallback={null}>
+                      <Button type="dashed" className={styles.newButton}>
+                        <PlusOutlined /> 新增项目
+                      </Button>
+                    </Access>
                   }
                   modalProps={{ destroyOnClose: true }}
                   onFinish={async (values: any) => {
