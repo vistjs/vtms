@@ -4,14 +4,16 @@
 export default function access(initialState: { currentUser?: Auth.User } | undefined) {
   const { currentUser } = initialState ?? {};
   return {
-    canAdmin: currentUser && currentUser.isAdmin,
+    canAdmin: currentUser?.isAdmin || false,
     canEditProject: (owners: string[]) => {
-      return currentUser && owners.includes(currentUser?._id);
+      return currentUser?._id && (currentUser.isAdmin || owners.includes(currentUser?._id));
     },
     canViewProject: (owners: string[], members: string[]) => {
       return (
-        (currentUser && owners.includes(currentUser?._id)) ||
-        (currentUser?._id && members.includes(currentUser?._id))
+        currentUser?._id &&
+        (currentUser.isAdmin ||
+          owners.includes(currentUser?._id) ||
+          members.includes(currentUser?._id))
       );
     },
   };
