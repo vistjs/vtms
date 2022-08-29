@@ -30,12 +30,12 @@ const connectMongo = async () => mongoose.connect(uri, options);
 
 const userSchema = new Schema(
   {
-    id: { type: String, required: true, unique: true },
     username: { type: String, required: true, unique: true },
     name: { type: String, required: false },
     hash: { type: String, required: true },
     salt: { type: String, required: true, unique: true },
     // password: { type: String, maxLength: 10 },
+    isAdmin: { type: Boolean, required: true },
     roles: { type: [String], default: [] },
   },
   { timestamps: true },
@@ -45,7 +45,7 @@ userSchema.index({ username: 1 });
 
 const UserModel = models.User || model('User', userSchema);
 
-export function createUser({ username, password, name, id }) {
+export function createUser({ username, password, name, isAdmin }) {
   // Here you should create the user and save the salt and hashed password (some dbs may have
   // authentication methods that will do it for you so you don't have to worry about it):
   const salt = crypto.randomBytes(16).toString('hex');
@@ -55,10 +55,10 @@ export function createUser({ username, password, name, id }) {
   const user = {
     // createdAt: Date.now(),
     username,
-    id,
     name,
     hash,
     salt,
+    isAdmin,
   };
   return user;
 }
@@ -89,7 +89,6 @@ async function main() {
       // default admin user
       username: 'admin',
       password: '12345',
-      id: '1',
       isAdmin: true,
       name: 'Admin',
     });
