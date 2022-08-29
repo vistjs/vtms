@@ -1,7 +1,6 @@
 import Footer from '@/components/Footer';
-import { login } from '@/pages/Auth/service';
+import { login, currentUser as queryCurrentUser } from '@/pages/Auth/service';
 
-import { getFakeCaptcha } from '@/services/ant-design-pro/login';
 import {
   AlipayCircleOutlined,
   LockOutlined,
@@ -36,8 +35,10 @@ const LoginMessage: React.FC<{
   );
 };
 
+const loginPath = '/user/login';
+
 const Login: React.FC = () => {
-  const [userLoginState, setUserLoginState] = useState<API.LoginResult>({});
+  const [userLoginState, setUserLoginState] = useState<Auth.LoginResult>({});
   const [type, setType] = useState<string>('account');
   const { initialState, setInitialState } = useModel('@@initialState');
 
@@ -45,16 +46,20 @@ const Login: React.FC = () => {
 
   const fetchUserInfo = async () => {
     console.log('initialState :', initialState);
-    const { user } = await initialState?.fetchUserInfo?.();
-    if (user) {
-      await setInitialState((s) => ({
-        ...s,
-        currentUser: user,
-      }));
+    if (initialState?.fetchUserInfo) {
+      const { user } = await initialState.fetchUserInfo();
+      if (user) {
+        await setInitialState((s) => ({
+          ...s,
+          currentUser: user,
+        }));
+      }
+    } else {
+      await queryCurrentUser();
     }
   };
 
-  const handleSubmit = async (values: API.LoginParams) => {
+  const handleSubmit = async (values: Auth.LoginParams) => {
     try {
       // 登录
       const msg = await login({ ...values, type }, { skipErrorHandler: true });
@@ -67,7 +72,7 @@ const Login: React.FC = () => {
         await fetchUserInfo();
         const urlParams = new URL(window.location.href).searchParams;
         const redirect = urlParams.get('redirect');
-        history.push(redirect || '/');
+        history.push(loginPath === redirect ? '/' : redirect || '/');
         return;
       }
       console.log(msg);
