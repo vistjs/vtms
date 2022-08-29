@@ -17,6 +17,7 @@
     path: '/auth',
     name: 'auth',
     icon: 'team',
+    hideInBreadcrumb: true,
     routes: [
       {
         path: '/auth/user',
@@ -37,6 +38,7 @@
     path: '/project',
     name: 'project',
     icon: 'schedule',
+    hideInBreadcrumb: true,
     routes: [
       {
         path: '/project/list',
@@ -48,24 +50,6 @@
         name: 'cases',
         component: './Project/Cases',
         hideInMenu: true,
-      },
-      {
-        component: './404',
-      },
-    ],
-  },
-  {
-    path: '/admin',
-    name: 'admin',
-    layout: false,
-    icon: 'crown',
-    access: 'canAdmin',
-    routes: [
-      {
-        path: '/admin/sub-page',
-        name: 'sub-page',
-        icon: 'smile',
-        component: './Welcome',
       },
       {
         component: './404',

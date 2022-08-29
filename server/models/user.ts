@@ -1,6 +1,5 @@
 import { Schema, models, model, Types } from 'mongoose';
 import { HydratedDocument } from 'mongoose';
-
 import conn from '@/lib/mongoose';
 import { IRole } from './role';
 export interface InputUser {

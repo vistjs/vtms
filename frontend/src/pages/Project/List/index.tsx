@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { PlusOutlined } from '@ant-design/icons';
-import { Button, Card, List, Typography } from 'antd';
+import { Button, Card, List, Typography, Tooltip } from 'antd';
 import { useRequest, request, Link, useAccess, Access } from '@umijs/max';
 import {
   ModalForm,
@@ -127,11 +127,14 @@ const CardList = () => {
                 <ModalForm
                   width={480}
                   trigger={
-                    <Access accessible={access.canAdmin} fallback={null}>
-                      <Button type="dashed" className={styles.newButton}>
-                        <PlusOutlined /> 新增项目
-                      </Button>
-                    </Access>
+                    <Button
+                      type="dashed"
+                      className={styles.newButton}
+                      disabled={!access.canAdmin}
+                      title={access.canAdmin ? '' : '请联系管理员新建项目'}
+                    >
+                      <PlusOutlined /> 新增项目
+                    </Button>
                   }
                   modalProps={{ destroyOnClose: true }}
                   onFinish={async (values: any) => {

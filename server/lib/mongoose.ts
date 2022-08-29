@@ -1,5 +1,5 @@
 import mongoose from 'mongoose';
-
+import '@/models'; // 必须现在初始化的时候先导入所有scheme
 const uri = process.env.MONGODB_URI as string;
 const options = { dbName: process.env.MONGODB_DB };
 

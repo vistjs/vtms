@@ -1,12 +1,10 @@
 import type { NextApiRequest, NextApiResponse } from 'next';
 import conn from '@/lib/mongoose';
 import Case, { CaseStatus } from '@/models/case';
-import HttpStatus from 'http-status-codes';
 import moment from 'moment';
 import nextConnect from 'next-connect';
 import Project from '@/models/project';
 import { normalizeSuccess, normalizeError, handlePagination } from '@/utils';
-import type { NextApiRequest, NextApiResponse } from 'next';
 import Cors from 'cors';
 
 // Initializing the cors middleware
@@ -35,12 +33,6 @@ function runMiddleware(
 
 const handler = nextConnect();
 const getRamdomStr = () => Math.random().toString(36).slice(2);
-
-handler.use(async (req, res, next) => {
-  res.setHeader('Access-Control-Allow-Origin', '*');
-  res.setHeader('Access-Control-Allow-Methods', 'POST, GET, OPTIONS, PUT');
-  next();
-});
 
 handler.post(async (req: NextApiRequest, res: NextApiResponse) => {
   try {

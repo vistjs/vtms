@@ -1,8 +1,7 @@
 import { Schema, models, model, Types } from 'mongoose';
 
 import conn from '@/lib/mongoose';
-import { ROLE_TYPE } from '@/constant/index';
-import { newRoleSeq } from '@/utils/index';
+import { ROLE_TYPE } from '@/constant';
 
 export interface IRole {
   name: string;
@@ -39,8 +38,6 @@ const RoleModel = models.Role || model<IRole>('Role', roleSchema);
 export const RoleDb = {
   async createRoles(roles: IRole[]) {
     await conn();
-    const roleCount = roles?.length;
-    await newRoleSeq(roleCount);
     const withIdRoles = roles.map((role, index) => ({
       ...role,
     }));
