@@ -6,6 +6,32 @@ import moment from 'moment';
 import nextConnect from 'next-connect';
 import Project from '@/models/project';
 import { normalizeSuccess, normalizeError, handlePagination } from '@/utils';
+import type { NextApiRequest, NextApiResponse } from 'next';
+import Cors from 'cors';
+
+// Initializing the cors middleware
+// You can read more about the available options here: https://github.com/expressjs/cors#configuration-options
+const cors = Cors({
+  methods: ['POST', 'GET', 'HEAD', 'PUT'],
+});
+
+// Helper method to wait for a middleware to execute before continuing
+// And to throw an error when an error happens in a middleware
+function runMiddleware(
+  req: NextApiRequest,
+  res: NextApiResponse,
+  fn: Function,
+) {
+  return new Promise((resolve, reject) => {
+    fn(req, res, (result: any) => {
+      if (result instanceof Error) {
+        return reject(result);
+      }
+
+      return resolve(result);
+    });
+  });
+}
 
 const handler = nextConnect();
 const getRamdomStr = () => Math.random().toString(36).slice(2);
@@ -57,7 +83,7 @@ handler.post(async (req: NextApiRequest, res: NextApiResponse) => {
 handler.get(async (req: NextApiRequest, res: NextApiResponse) => {
   try {
     const {
-      query: { id, current, pageSize },
+      query: { id, current, pageSize, projectId },
     } = req;
 
     await conn();
@@ -67,8 +93,18 @@ handler.get(async (req: NextApiRequest, res: NextApiResponse) => {
         _id: id,
       });
     } else {
+      if (!projectId) {
+        throw new Error('projectId is required');
+      }
+      const project = await Project.findOne({
+        seq: projectId,
+      });
+      if (!project) {
+        throw new Error('project do not exist');
+      }
       const { offset, limit } = handlePagination(current, pageSize);
-      const caseInstances = await Case.find({
+      caseInstances = await Case.find({
+        project: project._id,
         status: {
           $in: [CaseStatus.ACTIVE, CaseStatus.RUNNING, CaseStatus.ERROR],
         },
@@ -137,7 +173,14 @@ handler.put(async (req: NextApiRequest, res: NextApiResponse) => {
   }
 });
 
-export default handler;
+// next-connect默认会过滤一些请求，所以没用handler.use
+export default async function handleWrap(
+  req: NextApiRequest,
+  res: NextApiResponse,
+) {
+  await runMiddleware(req, res, cors);
+  await handler(req, res);
+}
 
 export const config = {
   api: {

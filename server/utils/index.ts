@@ -60,6 +60,8 @@ export function handlePagination(
 } {
   if (page && typeof page === 'string' && typeof parseInt(page) === 'number') {
     page = parseInt(page);
+  } else {
+    page = 1;
   }
   if (
     limit &&
@@ -67,6 +69,8 @@ export function handlePagination(
     typeof parseInt(limit) === 'number'
   ) {
     limit = parseInt(limit);
+  } else {
+    limit = 10;
   }
   return {
     limit,
