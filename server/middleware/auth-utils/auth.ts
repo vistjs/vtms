@@ -24,6 +24,14 @@ export async function getLoginSession(token, secret) {
   return session;
 }
 
+export function createUserSaltHash(password: string) {
+  const salt = crypto.randomBytes(16).toString('hex');
+  const hash = crypto
+    .pbkdf2Sync(password, salt, 1000, 64, 'sha512')
+    .toString('hex');
+  return { salt, hash };
+}
+
 export function createUser({ username, password, name }) {
   // Here you should create the user and save the salt and hashed password (some dbs may have
   // authentication methods that will do it for you so you don't have to worry about it):
@@ -35,8 +43,7 @@ export function createUser({ username, password, name }) {
     // createdAt: Date.now(),
     username,
     name,
-    hash,
-    salt,
+    ...createUserSaltHash(password),
   };
   return user;
 }

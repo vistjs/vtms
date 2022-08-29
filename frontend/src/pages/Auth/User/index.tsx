@@ -24,41 +24,14 @@ interface InputAddUser extends Omit<Auth.AddUser, 'isAdmin'> {
   isAdmin: string[];
 }
 
-const handleAdd = async (fields: Auth.AddUser) => {
-  const hide = message.loading('正在添加');
-  const { username, password, isAdmin } = fields;
-  try {
-    await addUser({ username, password, isAdmin });
-    hide();
-    message.success('Added successfully');
-    return true;
-  } catch (error) {
-    hide();
-    return false;
-  }
-};
-
-const handleUpdate = async (fields: Auth.AddUser) => {
-  const hide = message.loading('正在更新');
-  console.log('fields:', fields);
-  const { username, isAdmin } = fields;
-  try {
-    await updateUser({ username, isAdmin });
-    hide();
-    message.success('Updated successfully');
-    return true;
-  } catch (error) {
-    hide();
-    return false;
-  }
-};
-
 const postData = (data) => {
   return data?.list;
 };
 
+const PasswordReg = /^[\w-!?$%@*&]{5,}$/;
+
 const User: React.FC = () => {
-  const [createModalVisible, handleModalVisible] = useState<boolean>(false);
+  const [createModalVisible, setCreateModalVisible] = useState<boolean>(false);
   const [updateModalVisible, setUpdateModalVisible] = useState<boolean>(false);
 
   const actionRef = useRef<ActionType>();
@@ -71,6 +44,35 @@ const User: React.FC = () => {
    * */
   const intl = useIntl();
   const [form] = Form.useForm();
+
+  const handleAdd = async (fields: Auth.AddUser) => {
+    const hide = message.loading('正在添加');
+    const { username, password, isAdmin } = fields;
+    try {
+      await addUser({ username, password, isAdmin });
+      hide();
+      message.success('Added successfully');
+      return true;
+    } catch (error) {
+      hide();
+      return false;
+    }
+  };
+
+  const handleUpdate = async (fields: Auth.AddUser) => {
+    const hide = message.loading('正在更新');
+    console.log('fields:', fields);
+    const { username, isAdmin, password } = fields;
+    try {
+      await updateUser({ username, isAdmin, password: password.trim() });
+      hide();
+      message.success('Updated successfully');
+      return true;
+    } catch (error) {
+      hide();
+      return false;
+    }
+  };
 
   const columns: ProColumns<Auth.User>[] = [
     {
@@ -113,7 +115,7 @@ const User: React.FC = () => {
               async onOk() {
                 const success = await deleteUser({ username: record.username });
                 if (success) {
-                  handleModalVisible(false);
+                  setCreateModalVisible(false);
                   if (actionRef.current) {
                     actionRef.current.reload();
                   }
@@ -165,7 +167,7 @@ const User: React.FC = () => {
             type="primary"
             key="primary"
             onClick={() => {
-              handleModalVisible(true);
+              setCreateModalVisible(true);
             }}
           >
             <PlusOutlined /> <FormattedMessage id="pages.searchTable.new" defaultMessage="New" />
@@ -178,11 +180,11 @@ const User: React.FC = () => {
       <ModalForm
         title={intl.formatMessage({
           id: 'pages.searchTable.createForm.newRule',
-          defaultMessage: 'New rule',
+          defaultMessage: 'Add New User',
         })}
         width="400px"
         visible={createModalVisible}
-        onVisibleChange={handleModalVisible}
+        onVisibleChange={setCreateModalVisible}
         onFinish={async (value: InputAddUser) => {
           const { username, password, isAdmin } = value;
           const success = await handleAdd({
@@ -191,7 +193,7 @@ const User: React.FC = () => {
             isAdmin: isAdmin?.length > 0 && isAdmin[0] === 'Yes',
           });
           if (success) {
-            setUpdateModalVisible(false);
+            setCreateModalVisible(false);
             if (actionRef.current) {
               actionRef.current.reload();
             }
@@ -225,6 +227,10 @@ const User: React.FC = () => {
                 />
               ),
             },
+            {
+              pattern: PasswordReg,
+              message: 'Only support number, word, and -!?$%@*&, at least 5 words.',
+            },
           ]}
           width="md"
           name="password"
@@ -241,7 +247,7 @@ const User: React.FC = () => {
         form={form}
         title={intl.formatMessage({
           id: 'pages.searchTable.createForm.newRule',
-          defaultMessage: 'New rule',
+          defaultMessage: 'Update User',
         })}
         width="400px"
         visible={updateModalVisible}
@@ -254,7 +260,7 @@ const User: React.FC = () => {
             isAdmin: isAdmin?.length > 0 && isAdmin[0] === 'Yes',
           });
           if (success) {
-            handleModalVisible(false);
+            setUpdateModalVisible(false);
             if (actionRef.current) {
               actionRef.current.reload();
             }
@@ -262,22 +268,17 @@ const User: React.FC = () => {
         }}
       >
         <ProFormText width="md" name="username" label="Username" disabled />
-        {/* <ProFormText
+        <ProFormText
           rules={[
             {
-              required: true,
-              message: (
-                <FormattedMessage
-                  id="pages.searchTable.password"
-                  defaultMessage="Password is required"
-                />
-              ),
+              pattern: PasswordReg,
+              message: 'Only support number, word, and -!?$%@*&, at least 5 words.',
             },
           ]}
           width="md"
           name="password"
-          label="Password"
-        /> */}
+          label="New Password"
+        />
         <ProFormCheckbox.Group
           name="isAdmin"
           layout="vertical"
