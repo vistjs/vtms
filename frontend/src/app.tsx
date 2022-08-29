@@ -8,7 +8,7 @@ import { SettingDrawer } from '@ant-design/pro-components';
 import type { RunTimeLayoutConfig, RequestConfig } from '@umijs/max';
 import { history, Link } from '@umijs/max';
 import defaultSettings from '../config/defaultSettings';
-import { currentUser as queryCurrentUser } from './services/ant-design-pro/api';
+import { currentUser as queryCurrentUser } from '@/pages/Auth/service';
 import { ErrorCode } from '@/constant';
 
 const isDev = process.env.NODE_ENV === 'development';
