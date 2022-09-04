@@ -6,7 +6,7 @@ import { ROLE_TYPE } from '@/constant';
 export interface IRole {
   name: string;
   type: ROLE_TYPE;
-  project?: Schema.Types.ObjectId;
+  project?: Types.ObjectId;
   users?: Types.ObjectId[];
   desc?: string;
 }

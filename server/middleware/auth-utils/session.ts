@@ -50,7 +50,6 @@ export default function session({ name, secret, cookie: cookieOpts }) {
         res.end();
       }
     }
-    console.log('req token:', token);
 
     req.session = unsealed;
 

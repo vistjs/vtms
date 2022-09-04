@@ -13,6 +13,7 @@ export interface IUser {
   hash: string;
   salt: string;
   isAdmin: boolean;
+  roles?: IRole[];
 }
 
 export type DocumentIUser = HydratedDocument<IUser>;

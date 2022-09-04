@@ -72,7 +72,10 @@ const Login: React.FC = () => {
         await fetchUserInfo();
         const urlParams = new URL(window.location.href).searchParams;
         const redirect = urlParams.get('redirect');
-        history.push(loginPath === redirect ? '/' : redirect || '/');
+        console.log('redirect:', redirect);
+        let path = loginPath === redirect ? '/' : redirect || '/';
+        console.log('path:', path);
+        history.push('/');
         return;
       }
       console.log(msg);

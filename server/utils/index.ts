@@ -114,14 +114,16 @@ export function addRoleNameToUser(
 ): ResponseUser[] {
   const roleIdMap = new Map();
   roles?.forEach((role) => {
-    const { id: roleId } = role;
+    const { _id: roleId } = role;
     if (!roleIdMap.has(roleId)) {
       roleIdMap.set(roleId, role);
     }
   });
   users.forEach((user) => {
     user.roles = roles.filter((role) => {
-      return role.users?.includes(user._id);
+      const isUserRole =
+        role?.users?.findIndex((userId) => userId?.equals(user?._id)) > -1;
+      return isUserRole;
     });
   });
   return users;
