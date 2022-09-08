@@ -3,6 +3,8 @@ import LocalStrategy from 'passport-local';
 
 import conn from '@/lib/mongoose';
 import UserModel from '@/models/user';
+import RoleModel, { IRole } from '@/models/role';
+import { addRoleNameToUser } from '@/utils';
 
 import { validatePassword } from './auth';
 
@@ -14,8 +16,11 @@ passport.serializeUser(function (user, done) {
 
 passport.deserializeUser(async function (req, username, done) {
   // deserialize the username back into user object
-  const user = await UserModel.findOne({ username }).exec();
-  console.log('user in deserializeUser:', user);
+  const [rawUser, roles] = await Promise.all([
+    UserModel.findOne({ username }).exec(),
+    RoleModel.find().lean(),
+  ]);
+  let user = addRoleNameToUser([rawUser.toObject()], roles as IRole[])?.[0];
   done(null, user);
 });
 

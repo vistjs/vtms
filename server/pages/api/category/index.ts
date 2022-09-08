@@ -1,23 +1,21 @@
 import type { NextApiRequest, NextApiResponse } from 'next';
 import conn from '@/lib/mongoose';
 import Category from '@/models/category';
-import HttpStatus from 'http-status-codes';
-import moment from 'moment';
 
 import nextConnect from 'next-connect';
-import { handlePagination } from 'utils';
-import { SORTER_ASC, SORTER_DES } from '@/constant/index';
 import Project from '@/models/project';
 import { getAllSubCategoryId, handleTree } from './util';
 import Case, { CaseStatus } from '@/models/case';
 import auth from '@/middleware/auth';
 import { normalizeSuccess, normalizeError } from '@/utils';
+import projectRoleHandle from '@/utils/projectRoleHandle';
+import { NextApiRequestWithContext } from '@/types';
 
 const handler = nextConnect();
 
 handler.use(auth);
 
-handler.get(async (req: NextApiRequest, res: NextApiResponse) => {
+handler.get(async (req: NextApiRequestWithContext, res: NextApiResponse) => {
   try {
     const {
       query: { projectId },
@@ -28,17 +26,19 @@ handler.get(async (req: NextApiRequest, res: NextApiResponse) => {
     if (!project) {
       throw new Error('projectId does not exist');
     }
+    projectRoleHandle(req.user, project._id.toString());
+
     const categories = await Category.find({ project: project._id });
     const categoryTree = handleTree(categories);
 
     normalizeSuccess(res, categoryTree);
   } catch (err: any) {
     console.log(err);
-    normalizeError(res, err.message);
+    normalizeError(res, err.message, err.code);
   }
 });
 
-handler.post(async (req: NextApiRequest, res: NextApiResponse) => {
+handler.post(async (req: NextApiRequestWithContext, res: NextApiResponse) => {
   try {
     const {
       body: { title, parentId },
@@ -50,6 +50,7 @@ handler.post(async (req: NextApiRequest, res: NextApiResponse) => {
     if (!category) {
       throw new Error('parent does not exist');
     }
+    projectRoleHandle(req.user, category.project.toString());
 
     const categoryInstances = await Category.create({
       title,
@@ -59,31 +60,36 @@ handler.post(async (req: NextApiRequest, res: NextApiResponse) => {
 
     normalizeSuccess(res, categoryInstances);
   } catch (err: any) {
-    normalizeError(res, err.message);
+    normalizeError(res, err.message, err.code);
   }
 });
 
-handler.put(async (req: NextApiRequest, res: NextApiResponse) => {
+handler.put(async (req: NextApiRequestWithContext, res: NextApiResponse) => {
   try {
     const {
       body: { title, id },
     } = req;
 
+    const category = await Category.findOne({ _id: id });
+
+    if (!category) {
+      throw new Error('category does not exist');
+    }
+
+    projectRoleHandle(req.user, category.project.toString());
+
     await conn();
-    await Category.updateOne(
-      { _id: id },
-      {
-        title,
-      },
-    );
+    await category.update({
+      title,
+    });
 
     normalizeSuccess(res, { id });
   } catch (err: any) {
-    normalizeError(res, err.message);
+    normalizeError(res, err.message, err.code);
   }
 });
 
-handler.delete(async (req: NextApiRequest, res: NextApiResponse) => {
+handler.delete(async (req: NextApiRequestWithContext, res: NextApiResponse) => {
   try {
     const {
       body: { id },
@@ -100,9 +106,8 @@ handler.delete(async (req: NextApiRequest, res: NextApiResponse) => {
     if (!category) {
       throw new Error('category does not exist');
     }
-    // if (!category.parent) {
-    //   throw new Error('root node can not delete');
-    // }
+    projectRoleHandle(req.user, category.project.toString());
+
     const ids: string[] = await getAllSubCategoryId(category.project, id);
     const len = await Case.find({
       category: {
@@ -131,7 +136,7 @@ handler.delete(async (req: NextApiRequest, res: NextApiResponse) => {
 
     normalizeSuccess(res, null);
   } catch (err: any) {
-    normalizeError(res, err.message);
+    normalizeError(res, err.message, err.code);
   }
 });
 

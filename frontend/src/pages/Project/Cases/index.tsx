@@ -1,5 +1,5 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react';
-import { Form, Layout, message, Modal, Steps, Tooltip, Tree } from 'antd';
+import { Form, Layout, message, Modal, Popconfirm, Steps, Tooltip, Tree } from 'antd';
 import type { DataNode } from 'antd/es/tree';
 import moment from 'moment';
 import { DeleteOutlined, EditOutlined, PlusOutlined } from '@ant-design/icons';
@@ -261,14 +261,20 @@ const Cases: React.FC = () => {
         >
           <FormattedMessage id="pages.searchTable.config" defaultMessage="Configuration" />
         </a>,
-        <a
-          key="delete"
-          onClick={() => {
-            handleCaseDelete(record);
+        <Popconfirm
+          placement="top"
+          title="确定删除该用例吗?"
+          onConfirm={async () => {
+            const success = await handleCaseDelete(record);
+            if (success && actionRef.current) {
+              actionRef.current.reload();
+            }
           }}
+          okText="是"
+          cancelText="否"
         >
-          删除
-        </a>,
+          <a key="delete">删除</a>
+        </Popconfirm>,
       ],
     },
   ];
@@ -348,8 +354,10 @@ const Cases: React.FC = () => {
     }
     switch (type) {
       case 'delete':
-        await handleCategoryDelete(id);
-        getCategoryTree(query.projectId as string);
+        const success = await handleCategoryDelete(id);
+        if (success) {
+          getCategoryTree(query.projectId as string);
+        }
         break;
       case 'edit':
         handleCategoryModalStatus(categoryFormStatus.EDIT);
@@ -401,7 +409,7 @@ const Cases: React.FC = () => {
         </Sider>
         <Content>
           <ProTable<CaseListItem>
-            headerTitle="case list"
+            headerTitle="用例列表"
             actionRef={actionRef}
             rowKey="_id"
             search={{
@@ -515,12 +523,15 @@ const Cases: React.FC = () => {
         }}
         onFinish={async (value) => {
           try {
+            let success;
             if (categoryModalVisible === categoryFormStatus.EDIT) {
-              await handleCategoryUpdate(value.title, value.id);
+              success = await handleCategoryUpdate(value.title, value.id);
             } else {
-              await handleCategoryAdd(value.title, value.id);
+              success = await handleCategoryAdd(value.title, value.id);
             }
-            getCategoryTree(query.projectId as string);
+            if (success) {
+              getCategoryTree(query.projectId as string);
+            }
           } catch (e) {
             console.log(e);
           }
