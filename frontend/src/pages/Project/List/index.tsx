@@ -10,7 +10,7 @@ import {
   PageContainer,
   ProFormSelect,
 } from '@ant-design/pro-components';
-import { message } from 'antd';
+import { message, Avatar, Image } from 'antd';
 import type { CardListItemDataType } from './data';
 import styles from './style.less';
 
@@ -110,8 +110,23 @@ const CardList = () => {
                     ]}
                   >
                     <Card.Meta
-                      avatar={<img alt="" className={styles.cardAvatar} src={item.logo} />}
-                      title={<a>{item.name}</a>}
+                      avatar={
+                        item.logo ? (
+                          <Avatar
+                            src={
+                              <Image
+                                src={item.logo}
+                                style={{
+                                  width: 48,
+                                }}
+                              />
+                            }
+                          />
+                        ) : (
+                          <Avatar size={48}>{item?.name?.slice(0, 1)}</Avatar>
+                        )
+                      }
+                      title={item.name}
                       description={
                         <Paragraph className={styles.item} ellipsis={{ rows: 3 }}>
                           {item.desc}

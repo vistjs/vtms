@@ -18,6 +18,7 @@
     name: 'auth',
     icon: 'team',
     hideInBreadcrumb: true,
+    access: 'canAdmin',
     routes: [
       {
         path: '/auth/user',
