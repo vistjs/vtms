@@ -152,10 +152,10 @@ const User: React.FC = () => {
   return (
     <PageContainer>
       <ProTable<Auth.User, Auth.PageParams>
-        headerTitle={intl.formatMessage({
-          id: 'pages.searchTable.title',
-          defaultMessage: 'Enquiry form',
-        })}
+        // headerTitle={intl.formatMessage({
+        //   id: 'pages.searchTable.title',
+        //   defaultMessage: 'Enquiry form',
+        // })}
         actionRef={actionRef}
         rowKey="username"
         search={{
@@ -178,10 +178,7 @@ const User: React.FC = () => {
         columns={columns}
       />
       <ModalForm
-        title={intl.formatMessage({
-          id: 'pages.searchTable.createForm.newRule',
-          defaultMessage: 'Add New User',
-        })}
+        title="Add New User"
         width="400px"
         visible={createModalVisible}
         onVisibleChange={setCreateModalVisible}
@@ -245,10 +242,7 @@ const User: React.FC = () => {
       </ModalForm>
       <ModalForm
         form={form}
-        title={intl.formatMessage({
-          id: 'pages.searchTable.createForm.newRule',
-          defaultMessage: 'Update User',
-        })}
+        title="Update User"
         width="400px"
         visible={updateModalVisible}
         onVisibleChange={setUpdateModalVisible}

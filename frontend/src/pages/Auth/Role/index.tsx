@@ -142,10 +142,10 @@ const Role: React.FC = () => {
   return (
     <PageContainer>
       <ProTable<Auth.Role, Auth.PageParams>
-        headerTitle={intl.formatMessage({
-          id: 'pages.searchTable.title',
-          defaultMessage: 'Enquiry form',
-        })}
+        // headerTitle={intl.formatMessage({
+        //   id: 'pages.searchTable.title',
+        //   defaultMessage: 'Enquiry form',
+        // })}
         actionRef={actionRef}
         rowKey="_id"
         search={{
