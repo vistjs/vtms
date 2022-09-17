@@ -14,15 +14,11 @@
     ],
   },
   {
-    path: '/welcome',
-    name: 'welcome',
-    icon: 'smile',
-    component: './Welcome',
-  },
-  {
     path: '/auth',
     name: 'auth',
     icon: 'team',
+    hideInBreadcrumb: true,
+    access: 'canAdmin',
     routes: [
       {
         path: '/auth/user',
@@ -43,6 +39,7 @@
     path: '/project',
     name: 'project',
     icon: 'schedule',
+    hideInBreadcrumb: true,
     routes: [
       {
         path: '/project/list',
@@ -50,32 +47,10 @@
         component: './Project/List',
       },
       {
-        path: '/project/cases',
+        path: '/project/:projectId/cases',
         name: 'cases',
         component: './Project/Cases',
-      },
-      {
-        path: '/project/mocks',
-        name: 'mocks',
-        component: './Project/Mocks',
-      },
-      {
-        component: './404',
-      },
-    ],
-  },
-  {
-    path: '/admin',
-    name: 'admin',
-    layout: false,
-    icon: 'crown',
-    access: 'canAdmin',
-    routes: [
-      {
-        path: '/admin/sub-page',
-        name: 'sub-page',
-        icon: 'smile',
-        component: './Welcome',
+        hideInMenu: true,
       },
       {
         component: './404',
@@ -84,7 +59,7 @@
   },
   {
     path: '/',
-    redirect: '/welcome',
+    redirect: '/project/list',
   },
   {
     component: './404',

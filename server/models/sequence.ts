@@ -6,13 +6,13 @@ interface ISequence {
   seq: number[];
 }
 
-const projectSchema = new Schema<ISequence>({
+const sequenceSchema = new Schema<ISequence>({
   name: {type: String, required: true},
   seq: [Number],
 });
 
-projectSchema.index({ name: 1 });
+sequenceSchema.index({ name: 1 });
 
-const Sequence = models.Sequence || model<ISequence>('Sequence', projectSchema);
+const Sequence = models.Sequence || model<ISequence>('Sequence', sequenceSchema);
 
 export default Sequence

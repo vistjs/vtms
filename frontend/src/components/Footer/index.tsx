@@ -6,7 +6,7 @@ const Footer: React.FC = () => {
   const intl = useIntl();
   const defaultMessage = intl.formatMessage({
     id: 'app.copyright.produced',
-    defaultMessage: 'test daxia出品',
+    defaultMessage: 'test GUI出品',
   });
 
   const currentYear = new Date().getFullYear();
@@ -19,15 +19,9 @@ const Footer: React.FC = () => {
       copyright={`${currentYear} ${defaultMessage}`}
       links={[
         {
-          key: 'Ant Design Pro',
-          title: 'Ant Design Pro',
-          href: 'https://pro.ant.design',
-          blankTarget: true,
-        },
-        {
           key: 'github',
           title: <GithubOutlined />,
-          href: 'https://github.com/test-daxia/CodelessTC',
+          href: 'https://github.com/test-gui/CodelessTC',
           blankTarget: true,
         },
       ]}

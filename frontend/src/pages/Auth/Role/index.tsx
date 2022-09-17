@@ -1,8 +1,7 @@
-import { addRule, removeRule, rule, updateRule } from '@/services/ant-design-pro/api';
+import { getRoles, addRole, getUsersApi } from '../service';
 import { PlusOutlined } from '@ant-design/icons';
 import type { ActionType, ProColumns, ProDescriptionsItemProps } from '@ant-design/pro-components';
 import {
-  FooterToolbar,
   ModalForm,
   PageContainer,
   ProDescriptions,
@@ -11,77 +10,40 @@ import {
   ProTable,
 } from '@ant-design/pro-components';
 import { FormattedMessage, useIntl } from '@umijs/max';
-import { Button, Drawer, Input, message } from 'antd';
-import React, { useRef, useState } from 'react';
+import { Drawer, message, Select } from 'antd';
+import React, { useEffect, useRef, useState } from 'react';
+
+const { Option } = Select;
 
 /**
  * @en-US Add node
  * @zh-CN 添加节点
  * @param fields
  */
-const handleAdd = async (fields: API.RuleListItem) => {
+const handleAdd = async (fields: Auth.Role) => {
   const hide = message.loading('正在添加');
   try {
-    await addRule({ ...fields });
+    await addRole({ ...fields });
     hide();
     message.success('Added successfully');
     return true;
   } catch (error) {
     hide();
-    message.error('Adding failed, please try again!');
     return false;
   }
 };
 
-/**
- * @en-US Update node
- * @zh-CN 更新节点
- *
- * @param fields
- */
-const handleUpdate = async (fields: any) => {
-  const hide = message.loading('Configuring');
-  try {
-    await updateRule({
-      name: fields.name,
-      desc: fields.desc,
-      key: fields.key,
-    });
-    hide();
-
-    message.success('Configuration is successful');
-    return true;
-  } catch (error) {
-    hide();
-    message.error('Configuration failed, please try again!');
-    return false;
-  }
+const postData = (data) => {
+  console.log('data:', data);
+  return data?.list;
 };
 
-/**
- *  Delete node
- * @zh-CN 删除节点
- *
- * @param selectedRows
- */
-const handleRemove = async (selectedRows: API.RuleListItem[]) => {
-  const hide = message.loading('正在删除');
-  if (!selectedRows) return true;
-  try {
-    await removeRule({
-      key: selectedRows.map((row) => row.key),
-    });
-    hide();
-    message.success('Deleted successfully and will refresh soon');
-    return true;
-  } catch (error) {
-    hide();
-    message.error('Delete failed, please try again');
-    return false;
-  }
-};
+enum ModalStatus {
+  Add = 1,
+  Delete,
+}
 
-const User: React.FC = () => {
+const Role: React.FC = () => {
   /**
    * @en-US Pop-up window of new window
    * @zh-CN 新建窗口的弹窗
@@ -91,13 +53,19 @@ const User: React.FC = () => {
    * @en-US The pop-up window of the distribution update window
    * @zh-CN 分布更新窗口的弹窗
    * */
-  const [updateModalVisible, handleUpdateModalVisible] = useState<boolean>(false);
+  const [updateModalVisible, setUpdateModalVisible] = useState({
+    visible: false,
+    status: ModalStatus.Add,
+  });
+  const [addUserModalVisible, setAddUserModalVisible] = useState(false);
+  const [deleteUserModalVisible, setDeleteUserModalVisible] = useState(false);
 
   const [showDetail, setShowDetail] = useState<boolean>(false);
 
   const actionRef = useRef<ActionType>();
-  const [currentRow, setCurrentRow] = useState<API.RuleListItem>();
-  const [selectedRowsState, setSelectedRows] = useState<API.RuleListItem[]>([]);
+
+  const [users, setUsers] = useState<Auth.User[]>([]);
+  const [addUserId, setAddUserId] = useState<string>();
 
   /**
    * @en-US International configuration
@@ -105,9 +73,9 @@ const User: React.FC = () => {
    * */
   const intl = useIntl();
 
-  const columns: ProColumns<API.RuleListItem>[] = [
+  const columns: ProColumns<Auth.Role>[] = [
     {
-      title: '名称',
+      title: '角色',
       dataIndex: 'name',
       valueType: 'text',
     },
@@ -116,106 +84,123 @@ const User: React.FC = () => {
       dataIndex: 'desc',
       valueType: 'textarea',
     },
-    {
-      title: <FormattedMessage id="pages.searchTable.titleOption" defaultMessage="Operating" />,
-      dataIndex: 'option',
-      valueType: 'option',
-      render: (_, record) => [
-        <a
-          key="config"
-          onClick={() => {
-            handleUpdateModalVisible(true);
-            setCurrentRow(record);
-          }}
-        >
-          配置权限
-        </a>,
-      ],
-    },
+    // {
+    //   title: <FormattedMessage id="pages.searchTable.titleOption" defaultMessage="Operating" />,
+    //   dataIndex: 'option',
+    //   valueType: 'option',
+    //   render: (_, record) => [
+    //     <Button
+    //       type="link"
+    //       onClick={() => {
+    //         setAddUserModalVisible(true);
+    //       }}
+    //     >
+    //       增加用户
+    //     </Button>,
+    //     <Button
+    //       type="link"
+    //       danger
+    //       onClick={() => {
+    //         setDeleteUserModalVisible(true);
+    //       }}
+    //     >
+    //       删除用户
+    //     </Button>,
+    //   ],
+    // },
   ];
+
+  const handleSearch = (newValue: string) => {
+    if (newValue) {
+      // fetch(newValue, setData);
+    } else {
+      // setData([]);
+    }
+  };
+
+  // useEffect(() => {
+  //   getUsersApi({}).then((users) => {
+  //     console.log('users users in roles page:', users);
+  //     if (users.data?.list?.length) {
+  //       setUsers(users.data.list);
+  //     }
+  //     // setUsers(users)
+  //   });
+  // }, []);
+
+  const options = users?.map((user) => <Option key={user.id}>{user.username}</Option>);
+
+  // const onSearch = (value: string) => {
+  //   console.log('search:', value);
+  // };
+
+  const onChange = (userId: string) => {
+    console.log(`selected userId: ${userId}`);
+    setAddUserId(userId);
+  };
 
   return (
     <PageContainer>
-      <ProTable<API.RuleListItem, API.PageParams>
-        headerTitle={intl.formatMessage({
-          id: 'pages.searchTable.title',
-          defaultMessage: 'Enquiry form',
-        })}
+      <ProTable<Auth.Role, Auth.PageParams>
+        // headerTitle={intl.formatMessage({
+        //   id: 'pages.searchTable.title',
+        //   defaultMessage: 'Enquiry form',
+        // })}
         actionRef={actionRef}
-        rowKey="key"
+        rowKey="_id"
         search={{
           labelWidth: 120,
         }}
-        toolBarRender={() => [
-          <Button
-            type="primary"
-            key="primary"
-            onClick={() => {
-              handleModalVisible(true);
-            }}
-          >
-            <PlusOutlined /> <FormattedMessage id="pages.searchTable.new" defaultMessage="New" />
-          </Button>,
-        ]}
-        request={rule}
+        request={getRoles}
+        postData={postData}
         columns={columns}
-        rowSelection={{
-          onChange: (_, selectedRows) => {
-            setSelectedRows(selectedRows);
-          },
-        }}
       />
-      {selectedRowsState?.length > 0 && (
-        <FooterToolbar
-          extra={
-            <div>
-              <FormattedMessage id="pages.searchTable.chosen" defaultMessage="Chosen" />{' '}
-              <a style={{ fontWeight: 600 }}>{selectedRowsState.length}</a>{' '}
-              <FormattedMessage id="pages.searchTable.item" defaultMessage="项" />
-              &nbsp;&nbsp;
-              <span>
-                <FormattedMessage
-                  id="pages.searchTable.totalServiceCalls"
-                  defaultMessage="Total number of service calls"
-                />{' '}
-                {selectedRowsState.reduce((pre, item) => pre + item.callNo!, 0)}{' '}
-                <FormattedMessage id="pages.searchTable.tenThousand" defaultMessage="万" />
-              </span>
-            </div>
-          }
-        >
-          <Button
-            onClick={async () => {
-              await handleRemove(selectedRowsState);
-              setSelectedRows([]);
-              actionRef.current?.reloadAndRest?.();
-            }}
-          >
-            <FormattedMessage
-              id="pages.searchTable.batchDeletion"
-              defaultMessage="Batch deletion"
-            />
-          </Button>
-          <Button type="primary">
-            <FormattedMessage
-              id="pages.searchTable.batchApproval"
-              defaultMessage="Batch approval"
-            />
-          </Button>
-        </FooterToolbar>
-      )}
       <ModalForm
-        title={intl.formatMessage({
-          id: 'pages.searchTable.createForm.newRule',
-          defaultMessage: 'New rule',
-        })}
+        title="Add User"
         width="400px"
-        visible={createModalVisible}
-        onVisibleChange={handleModalVisible}
+        visible={addUserModalVisible}
+        onVisibleChange={(visible) => {
+          setAddUserModalVisible(visible);
+        }}
         onFinish={async (value) => {
-          const success = await handleAdd(value as API.RuleListItem);
+          const success = await handleAdd(value as Auth.Role);
           if (success) {
-            handleModalVisible(false);
+            setUpdateModalVisible({ visible: false, status: updateModalVisible.status });
+            if (actionRef.current) {
+              actionRef.current.reload();
+            }
+          }
+        }}
+      >
+        <Select
+          style={{ width: 200 }}
+          showSearch
+          allowClear
+          placeholder="Select a user"
+          optionFilterProp="children"
+          onChange={onChange}
+          // onSearch={onSearch}
+          filterOption={(input, option) => {
+            return (option!.children as unknown as string)
+              .toLowerCase()
+              .includes(input.toLowerCase());
+          }}
+        >
+          {options}
+        </Select>
+      </ModalForm>
+
+      <ModalForm
+        title="Delete User"
+        width="400px"
+        visible={deleteUserModalVisible}
+        onVisibleChange={(visible) => {
+          setDeleteUserModalVisible(visible);
+        }}
+        onFinish={async (value) => {
+          const success = await handleAdd(value as Auth.Role);
+          if (success) {
+            setUpdateModalVisible({ visible: false, status: updateModalVisible.status });
             if (actionRef.current) {
               actionRef.current.reload();
             }
@@ -240,7 +225,7 @@ const User: React.FC = () => {
         <ProFormTextArea width="md" name="desc" />
       </ModalForm>
 
-      <Drawer
+      {/* <Drawer
         width={600}
         visible={showDetail}
         onClose={() => {
@@ -262,9 +247,9 @@ const User: React.FC = () => {
             columns={columns as ProDescriptionsItemProps<API.RuleListItem>[]}
           />
         )}
-      </Drawer>
+      </Drawer> */}
     </PageContainer>
   );
 };
 
-export default User;
+export default Role;

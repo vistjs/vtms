@@ -17,7 +17,6 @@
     "lint:js": "eslint --cache --ext .js,.jsx,.ts,.tsx --format=pretty ./src",
     "lint:prettier": "prettier -c --write \"src/**/*\" --end-of-line auto",
     "openapi": "max openapi",
-    "playwright": "playwright install && playwright test",
     "prettier": "prettier -c --write \"src/**/*\"",
     "serve": "umi-serve",
     "start": "cross-env UMI_ENV=dev max dev",
@@ -27,7 +26,6 @@
     "start:test": "cross-env REACT_APP_ENV=test MOCK=none UMI_ENV=dev max dev",
     "test": "max test",
     "test:component": "max test ./src/components",
-    "test:e2e": "node ./tests/run-tests.js",
     "tsc": "tsc --noEmit"
   },
   "lint-staged": {
@@ -47,6 +45,7 @@
     "@umijs/route-utils": "^2.0.0",
     "antd": "^4.20.0",
     "classnames": "^2.3.0",
+    "http-status-codes": "^2.2.0",
     "lodash": "^4.17.0",
     "moment": "^2.29.0",
     "omit.js": "^2.0.2",
@@ -59,7 +58,6 @@
   },
   "devDependencies": {
     "@ant-design/pro-cli": "^2.1.0",
-    "@playwright/test": "^1.17.0",
     "@types/classnames": "^2.3.1",
     "@types/express": "^4.17.0",
     "@types/history": "^4.7.0",

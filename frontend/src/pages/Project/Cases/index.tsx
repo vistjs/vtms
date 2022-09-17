@@ -1,111 +1,127 @@
-import { addRule, removeRule, rule, updateRule } from '@/services/ant-design-pro/api';
-import { PlusOutlined } from '@ant-design/icons';
-import type { ActionType, ProColumns, ProDescriptionsItemProps } from '@ant-design/pro-components';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
+import { Form, Layout, message, Modal, Popconfirm, Steps, Tooltip, Tree } from 'antd';
+import type { DataNode } from 'antd/es/tree';
+import moment from 'moment';
+import { DeleteOutlined, EditOutlined, PlusOutlined } from '@ant-design/icons';
 import {
-  FooterToolbar,
-  ModalForm,
-  PageContainer,
-  ProDescriptions,
-  ProFormText,
-  ProFormTextArea,
-  ProTable,
+  ActionType,
+  ProColumns,
+  ProFormSelect,
+  ProFormTreeSelect,
 } from '@ant-design/pro-components';
-import { FormattedMessage, useIntl } from '@umijs/max';
-import { Button, Drawer, Input, message } from 'antd';
-import React, { useRef, useState } from 'react';
+import { ModalForm, PageContainer, ProFormText, ProTable } from '@ant-design/pro-components';
+import { FormattedMessage, useParams } from '@umijs/max';
+import {
+  addCategory,
+  deleteCategory,
+  getCases,
+  getCategories,
+  deleteCase,
+  updateCase,
+  updateCategory,
+} from './service';
+import { CaseListItem, caseStatus, caseStatusText, category, RecordType } from './constants';
+import './index.less';
 
-/**
- * @en-US Add node
- * @zh-CN 添加节点
- * @param fields
- */
-const handleAdd = async (fields: API.RuleListItem) => {
-  const hide = message.loading('正在添加');
-  try {
-    await addRule({ ...fields });
-    hide();
-    message.success('Added successfully');
-    return true;
-  } catch (error) {
-    hide();
-    message.error('Adding failed, please try again!');
-    return false;
-  }
+const { Sider, Content } = Layout;
+const { DirectoryTree } = Tree;
+const { Step } = Steps;
+
+enum categoryFormStatus {
+  HIDE,
+  ADD,
+  EDIT,
+}
+
+type categoryTreeNode = DataNode & {
+  label: string;
 };
 
-/**
- * @en-US Update node
- * @zh-CN 更新节点
- *
- * @param fields
- */
-const handleUpdate = async (fields: any) => {
-  const hide = message.loading('Configuring');
+const handleCaseUpdate = async (fields: any) => {
+  const hide = message.loading('Updating');
+  console.log(fields);
   try {
-    await updateRule({
+    await updateCase({
       name: fields.name,
-      desc: fields.desc,
-      key: fields.key,
+      status: fields.status,
+      id: fields.id,
+      categoryId: fields.category.value,
     });
     hide();
 
-    message.success('Configuration is successful');
+    message.success('Updated successfully and will refresh soon');
     return true;
-  } catch (error) {
+  } catch (error: any) {
     hide();
-    message.error('Configuration failed, please try again!');
     return false;
   }
 };
 
-/**
- *  Delete node
- * @zh-CN 删除节点
- *
- * @param selectedRows
- */
-const handleRemove = async (selectedRows: API.RuleListItem[]) => {
-  const hide = message.loading('正在删除');
-  if (!selectedRows) return true;
+const handleCaseDelete = async (selectedRow: CaseListItem) => {
+  const hide = message.loading('Deleting');
   try {
-    await removeRule({
-      key: selectedRows.map((row) => row.key),
-    });
+    await deleteCase(selectedRow._id);
     hide();
     message.success('Deleted successfully and will refresh soon');
     return true;
-  } catch (error) {
+  } catch (error: any) {
     hide();
-    message.error('Delete failed, please try again');
     return false;
   }
 };
 
-const User: React.FC = () => {
-  /**
-   * @en-US Pop-up window of new window
-   * @zh-CN 新建窗口的弹窗
-   *  */
-  const [createModalVisible, handleModalVisible] = useState<boolean>(false);
-  /**
-   * @en-US The pop-up window of the distribution update window
-   * @zh-CN 分布更新窗口的弹窗
-   * */
+const handleCategoryUpdate = async (title: string, id: string) => {
+  const hide = message.loading('Updating');
+  try {
+    await updateCategory(title, id);
+    hide();
+    message.success('Updated successfully and will refresh soon');
+    return true;
+  } catch (error: any) {
+    hide();
+    return false;
+  }
+};
+
+const handleCategoryAdd = async (title: string, parentId: string) => {
+  const hide = message.loading('adding');
+  try {
+    await addCategory(title, parentId);
+    hide();
+    message.success('add successfully and will refresh soon');
+    return true;
+  } catch (error: any) {
+    hide();
+    return false;
+  }
+};
+
+const handleCategoryDelete = async (categoryId: string) => {
+  const hide = message.loading('deleting');
+  try {
+    await deleteCategory(categoryId);
+    hide();
+    message.success('Deleted successfully and will refresh soon');
+    return true;
+  } catch (error: any) {
+    hide();
+    return false;
+  }
+};
+
+const Cases: React.FC = () => {
+  const query = useParams();
   const [updateModalVisible, handleUpdateModalVisible] = useState<boolean>(false);
-
-  const [showDetail, setShowDetail] = useState<boolean>(false);
-
+  const [categoryModalVisible, handleCategoryModalStatus] = useState<number>(
+    categoryFormStatus.HIDE,
+  );
+  const [caseFormRef] = Form.useForm();
+  const [categoryFormRef] = Form.useForm();
+  const selectCategoryId = useRef('');
+  const [categoryTree, setCategoryTree] = useState<Array<categoryTreeNode>>([]);
   const actionRef = useRef<ActionType>();
-  const [currentRow, setCurrentRow] = useState<API.RuleListItem>();
-  const [selectedRowsState, setSelectedRows] = useState<API.RuleListItem[]>([]);
 
-  /**
-   * @en-US International configuration
-   * @zh-CN 国际化配置
-   * */
-  const intl = useIntl();
-
-  const columns: ProColumns<API.RuleListItem>[] = [
+  const columns: ProColumns<CaseListItem>[] = [
     {
       title: '名称',
       dataIndex: 'name',
@@ -113,8 +129,54 @@ const User: React.FC = () => {
         return (
           <a
             onClick={() => {
-              setCurrentRow(entity);
-              setShowDetail(true);
+              Modal.info({
+                title: '用例信息',
+                content: (
+                  <div
+                    style={{
+                      maxHeight: '63vh',
+                      overflow: 'auto',
+                      paddingTop: '20px',
+                    }}
+                  >
+                    <Steps direction="vertical">
+                      {entity.frames.map((item: any, index: string) => {
+                        let title;
+                        let subInfo;
+                        if (item.type === RecordType.MOUSE) {
+                          title = item.data.type;
+                        } else if (item.type === RecordType.INPUT) {
+                          title = RecordType[item.type].toLowerCase();
+                          subInfo = item.data.text;
+                        } else {
+                          title = RecordType[item.type].toLowerCase();
+                        }
+                        return (
+                          <Step
+                            status="process"
+                            key={index}
+                            title={title}
+                            description={
+                              <>
+                                {subInfo && (
+                                  <div
+                                    style={{
+                                      color: 'rgba(0, 0, 0, 0.45)',
+                                    }}
+                                  >
+                                    {subInfo}
+                                  </div>
+                                )}
+                                <div>{moment(item.time).format('YYYY-MM-DD hh:mm:ss')}</div>
+                              </>
+                            }
+                          />
+                        );
+                      })}
+                    </Steps>
+                  </div>
+                ),
+              });
             }}
           >
             {dom}
@@ -124,48 +186,30 @@ const User: React.FC = () => {
     },
     {
       title: '执行次数',
-      dataIndex: 'callNo',
-      sorter: true,
+      dataIndex: 'runs',
+      search: false,
       hideInForm: true,
-      renderText: (val: string) =>
-        `${val}${intl.formatMessage({
-          id: 'pages.searchTable.tenThousand',
-          defaultMessage: ' 万 ',
-        })}`,
+      renderText: (val: string) => val,
     },
     {
       title: <FormattedMessage id="pages.searchTable.titleStatus" defaultMessage="Status" />,
       dataIndex: 'status',
       hideInForm: true,
       valueEnum: {
-        0: {
-          text: (
-            <FormattedMessage
-              id="pages.searchTable.nameStatus.default"
-              defaultMessage="Shut down"
-            />
-          ),
+        [caseStatus.NOTACTIVE]: {
+          text: caseStatusText[caseStatus.NOTACTIVE],
           status: 'Default',
         },
-        1: {
-          text: (
-            <FormattedMessage id="pages.searchTable.nameStatus.running" defaultMessage="Running" />
-          ),
-          status: 'Processing',
-        },
-        2: {
-          text: (
-            <FormattedMessage id="pages.searchTable.nameStatus.online" defaultMessage="Online" />
-          ),
+        [caseStatus.ACTIVE]: {
+          text: caseStatusText[caseStatus.ACTIVE],
           status: 'Success',
         },
-        3: {
-          text: (
-            <FormattedMessage
-              id="pages.searchTable.nameStatus.abnormal"
-              defaultMessage="Abnormal"
-            />
-          ),
+        [caseStatus.RUNNING]: {
+          text: caseStatusText[caseStatus.RUNNING],
+          status: 'Processing',
+        },
+        [caseStatus.ERROR]: {
+          text: caseStatusText[caseStatus.ERROR],
           status: 'Error',
         },
       },
@@ -173,55 +217,30 @@ const User: React.FC = () => {
     {
       title: '上次执行时间',
       sorter: true,
-      dataIndex: 'updatedAt',
+      dataIndex: 'lastRun',
+      search: false,
       valueType: 'dateTime',
-      renderFormItem: (item, { defaultRender, ...rest }, form) => {
-        const status = form.getFieldValue('status');
-        if (`${status}` === '0') {
-          return false;
-        }
-        if (`${status}` === '3') {
-          return (
-            <Input
-              {...rest}
-              placeholder={intl.formatMessage({
-                id: 'pages.searchTable.exception',
-                defaultMessage: 'Please enter the reason for the exception!',
-              })}
-            />
-          );
-        }
-        return defaultRender(item);
-      },
+      render: (dom) => dom,
     },
     {
       title: '更新时间',
       sorter: true,
-      dataIndex: 'updatedAt',
+      dataIndex: 'updateAt',
+      search: false,
       valueType: 'dateTime',
-      renderFormItem: (item, { defaultRender, ...rest }, form) => {
-        const status = form.getFieldValue('status');
-        if (`${status}` === '0') {
-          return false;
-        }
-        if (`${status}` === '3') {
-          return (
-            <Input
-              {...rest}
-              placeholder={intl.formatMessage({
-                id: 'pages.searchTable.exception',
-                defaultMessage: 'Please enter the reason for the exception!',
-              })}
-            />
-          );
-        }
-        return defaultRender(item);
-      },
+      render: (dom) => dom,
     },
     {
       title: '更新人',
-      dataIndex: 'name',
-      valueType: 'text'
+      dataIndex: 'lastOperator',
+      search: false,
+      render: (user: any) => {
+        if (user && user.username) {
+          return user.username;
+        } else {
+          return '-';
+        }
+      },
     },
     {
       title: <FormattedMessage id="pages.searchTable.titleOption" defaultMessage="Operating" />,
@@ -231,147 +250,307 @@ const User: React.FC = () => {
         <a
           key="config"
           onClick={() => {
+            caseFormRef.setFieldsValue({
+              id: record._id,
+              name: record.name,
+              status: record.status,
+              category: record.category,
+            });
             handleUpdateModalVisible(true);
-            setCurrentRow(record);
           }}
         >
           <FormattedMessage id="pages.searchTable.config" defaultMessage="Configuration" />
         </a>,
-        <a key="subscribeAlert" href="https://procomponents.ant.design/">
-          <FormattedMessage
-            id="pages.searchTable.subscribeAlert"
-            defaultMessage="Subscribe to alerts"
-          />
-        </a>,
+        <Popconfirm
+          placement="top"
+          title="确定删除该用例吗?"
+          onConfirm={async () => {
+            const success = await handleCaseDelete(record);
+            if (success && actionRef.current) {
+              actionRef.current.reload();
+            }
+          }}
+          okText="是"
+          cancelText="否"
+        >
+          <a key="delete">删除</a>
+        </Popconfirm>,
       ],
     },
   ];
 
+  const treeSelectHandle = useCallback(
+    (selectedKeys, info) => {
+      if (info.node.key !== selectCategoryId.current) {
+        selectCategoryId.current = info.node.key || '';
+        if (actionRef.current) {
+          actionRef.current.reload();
+        }
+      }
+    },
+    [selectCategoryId],
+  );
+
+  const getCategoryTree = useCallback((projectId: string) => {
+    getCategories(projectId).then(({ data }) => {
+      const maxLen = 13; // 超出需要用tooltip
+      const handleTree = (category: category, n = 0) => {
+        const { title, _id } = category;
+        const node: categoryTreeNode = {
+          key: _id,
+          label: title,
+          title: (
+            <>
+              <span className="tree-title-text">
+                {title.length > maxLen - n * 2 ? (
+                  <Tooltip placement="topLeft" title={title}>
+                    {title}
+                  </Tooltip>
+                ) : (
+                  title
+                )}
+              </span>
+              <span
+                className="tree-title-options"
+                data-id={category._id}
+                onClick={handleAddCategory}
+              >
+                {n < 4 && <PlusOutlined />}
+                {n > 0 && (
+                  <>
+                    <EditOutlined />
+                    <DeleteOutlined />
+                  </>
+                )}
+              </span>
+            </>
+          ),
+        };
+        if (category.children) {
+          node.children = category.children.map((item) => handleTree(item, n + 1));
+        } else {
+          node.isLeaf = true;
+        }
+        return node;
+      };
+      setCategoryTree([handleTree(data)]);
+    });
+  }, []);
+
+  const handleAddCategory: React.MouseEventHandler<HTMLSpanElement> = useCallback(async (e) => {
+    e.stopPropagation();
+    const id = e.currentTarget.dataset.id;
+    let target = e.target as HTMLSpanElement;
+    let type;
+    while (!type && target) {
+      const icon = target?.dataset?.icon;
+      if (icon) {
+        type = icon;
+      }
+      target = target.parentNode as HTMLSpanElement;
+    }
+    if (!id) {
+      return;
+    }
+    switch (type) {
+      case 'delete':
+        const success = await handleCategoryDelete(id);
+        if (success) {
+          getCategoryTree(query.projectId as string);
+        }
+        break;
+      case 'edit':
+        handleCategoryModalStatus(categoryFormStatus.EDIT);
+        const title = e.currentTarget.parentNode?.children[0].textContent;
+        categoryFormRef.setFieldsValue({
+          id,
+          title,
+        });
+        break;
+      case 'plus':
+        handleCategoryModalStatus(categoryFormStatus.ADD);
+        categoryFormRef.setFieldsValue({
+          title: '',
+          id,
+        });
+        break;
+    }
+  }, []);
+
+  useEffect(() => {
+    if (query.projectId) {
+      getCategoryTree(query.projectId);
+    }
+  }, []);
+
   return (
     <PageContainer>
-      <ProTable<API.RuleListItem, API.PageParams>
-        headerTitle={intl.formatMessage({
-          id: 'pages.searchTable.title',
-          defaultMessage: 'Enquiry form',
-        })}
-        actionRef={actionRef}
-        rowKey="key"
-        search={{
-          labelWidth: 120,
-        }}
-        toolBarRender={() => [
-          <Button
-            type="primary"
-            key="primary"
-            onClick={() => {
-              handleModalVisible(true);
-            }}
-          >
-            <PlusOutlined /> <FormattedMessage id="pages.searchTable.new" defaultMessage="New" />
-          </Button>,
-        ]}
-        request={rule}
-        columns={columns}
-        rowSelection={{
-          onChange: (_, selectedRows) => {
-            setSelectedRows(selectedRows);
-          },
-        }}
-      />
-      {selectedRowsState?.length > 0 && (
-        <FooterToolbar
-          extra={
-            <div>
-              <FormattedMessage id="pages.searchTable.chosen" defaultMessage="Chosen" />{' '}
-              <a style={{ fontWeight: 600 }}>{selectedRowsState.length}</a>{' '}
-              <FormattedMessage id="pages.searchTable.item" defaultMessage="项" />
-              &nbsp;&nbsp;
-              <span>
-                <FormattedMessage
-                  id="pages.searchTable.totalServiceCalls"
-                  defaultMessage="Total number of service calls"
-                />{' '}
-                {selectedRowsState.reduce((pre, item) => pre + item.callNo!, 0)}{' '}
-                <FormattedMessage id="pages.searchTable.tenThousand" defaultMessage="万" />
-              </span>
-            </div>
-          }
+      <Layout>
+        <Sider
+          width="240"
+          style={{
+            backgroundColor: '#fff',
+            marginRight: '16px',
+            borderRadius: '6px',
+            boxShadow:
+              '0 2px 4px 0 rgb(0 0 0 / 5%), 0 1px 2px 0 rgb(25 15 15 / 7%), 0 0 1px 0 rgb(0 0 0 / 8%)',
+            overflow: 'hidden',
+          }}
         >
-          <Button
-            onClick={async () => {
-              await handleRemove(selectedRowsState);
-              setSelectedRows([]);
-              actionRef.current?.reloadAndRest?.();
-            }}
-          >
-            <FormattedMessage
-              id="pages.searchTable.batchDeletion"
-              defaultMessage="Batch deletion"
+          {categoryTree.length > 0 && (
+            <DirectoryTree
+              className="case-tree"
+              onSelect={treeSelectHandle}
+              treeData={categoryTree}
+              defaultExpandedKeys={[categoryTree[0]?.key]}
+              defaultSelectedKeys={[categoryTree[0]?.key]}
             />
-          </Button>
-        </FooterToolbar>
-      )}
+          )}
+        </Sider>
+        <Content>
+          <ProTable<CaseListItem>
+            headerTitle="用例列表"
+            actionRef={actionRef}
+            rowKey="_id"
+            search={{
+              labelWidth: 120,
+            }}
+            request={async (params, option) => {
+              const res = await getCases(
+                Object.assign({
+                  projectId: query.projectId,
+                  categoryId: selectCategoryId.current,
+                  ...params,
+                }),
+                option,
+              );
+              return { data: res?.data?.list, total: res?.data?.total, success: true };
+            }}
+            columns={columns}
+          />
+        </Content>
+      </Layout>
+
       <ModalForm
-        title={intl.formatMessage({
-          id: 'pages.searchTable.createForm.newRule',
-          defaultMessage: 'New rule',
-        })}
-        width="400px"
-        visible={createModalVisible}
-        onVisibleChange={handleModalVisible}
+        title="edit case"
+        width="460px"
+        form={caseFormRef}
+        visible={updateModalVisible}
+        onVisibleChange={handleUpdateModalVisible}
         onFinish={async (value) => {
-          const success = await handleAdd(value as API.RuleListItem);
+          const success = await handleCaseUpdate(value);
           if (success) {
-            handleModalVisible(false);
+            handleUpdateModalVisible(false);
             if (actionRef.current) {
               actionRef.current.reload();
             }
           }
         }}
       >
+        <ProFormText name="id" hidden />
         <ProFormText
           rules={[
             {
               required: true,
-              message: (
-                <FormattedMessage
-                  id="pages.searchTable.ruleName"
-                  defaultMessage="Rule name is required"
-                />
-              ),
             },
           ]}
-          width="md"
           name="name"
+          label="名称"
         />
-        <ProFormTextArea width="md" name="desc" />
+        <ProFormSelect
+          options={[
+            {
+              value: caseStatus.NOTACTIVE,
+              label: caseStatusText[caseStatus.NOTACTIVE],
+            },
+            {
+              value: caseStatus.ACTIVE,
+              label: caseStatusText[caseStatus.ACTIVE],
+            },
+          ]}
+          width="lg"
+          name="status"
+          label="状态"
+        />
+        <ProFormTreeSelect
+          name="category"
+          label="目录"
+          placeholder="Please select"
+          allowClear
+          secondary
+          request={async () => {
+            type selectNode = {
+              value: string;
+              label: string;
+              children?: selectNode[];
+            };
+            const handleTree = (category: categoryTreeNode) => {
+              const node: selectNode = {
+                value: category.key as string,
+                label: category.label,
+              };
+
+              if (category.children) {
+                node.children = category.children.map((item: any) => handleTree(item));
+              }
+              return node;
+            };
+            return [handleTree(categoryTree[0])];
+          }}
+          // tree-select args
+          fieldProps={{
+            showArrow: false,
+            filterTreeNode: true,
+            showSearch: true,
+            dropdownMatchSelectWidth: false,
+            labelInValue: true,
+            autoClearSearchValue: true,
+            multiple: false,
+            treeNodeFilterProp: 'label',
+          }}
+        />
       </ModalForm>
 
-      <Drawer
-        width={600}
-        visible={showDetail}
-        onClose={() => {
-          setCurrentRow(undefined);
-          setShowDetail(false);
+      <ModalForm
+        title={`${categoryModalVisible === categoryFormStatus.EDIT ? 'Edit' : 'New'} Category`}
+        width="460px"
+        form={categoryFormRef}
+        visible={categoryModalVisible !== categoryFormStatus.HIDE}
+        onVisibleChange={(value) => {
+          if (!value) {
+            handleCategoryModalStatus(categoryFormStatus.HIDE);
+          }
         }}
-        closable={false}
+        onFinish={async (value) => {
+          try {
+            let success;
+            if (categoryModalVisible === categoryFormStatus.EDIT) {
+              success = await handleCategoryUpdate(value.title, value.id);
+            } else {
+              success = await handleCategoryAdd(value.title, value.id);
+            }
+            if (success) {
+              getCategoryTree(query.projectId as string);
+            }
+          } catch (e) {
+            console.log(e);
+          }
+          handleCategoryModalStatus(categoryFormStatus.HIDE);
+        }}
       >
-        {currentRow?.name && (
-          <ProDescriptions<API.RuleListItem>
-            column={2}
-            title={currentRow?.name}
-            request={async () => ({
-              data: currentRow || {},
-            })}
-            params={{
-              id: currentRow?.name,
-            }}
-            columns={columns as ProDescriptionsItemProps<API.RuleListItem>[]}
-          />
-        )}
-      </Drawer>
+        <ProFormText name="id" hidden />
+        <ProFormText
+          rules={[
+            {
+              required: true,
+            },
+          ]}
+          name="title"
+          label="名称"
+        />
+      </ModalForm>
     </PageContainer>
   );
 };
 
-export default User;
+export default Cases;

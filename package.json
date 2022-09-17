@@ -2,6 +2,7 @@
   "private": true,
   "scripts": {
     "dev": "pnpm run dev -r --parallel",
+    "init-db": "node server/scripts/init-users.mjs",
     "lint-staged:js": "eslint --ext .js,.jsx,.ts,.tsx ",
     "prepare": "husky install",
     "prettier": "prettier -c --write \"{frontend, server}/**/*\""

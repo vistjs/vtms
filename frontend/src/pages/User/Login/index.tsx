@@ -1,6 +1,6 @@
 import Footer from '@/components/Footer';
-import { login } from '@/services/ant-design-pro/api';
-import { getFakeCaptcha } from '@/services/ant-design-pro/login';
+import { login, currentUser as queryCurrentUser } from '@/pages/Auth/service';
+
 import {
   AlipayCircleOutlined,
   LockOutlined,
@@ -35,28 +35,35 @@ const LoginMessage: React.FC<{
   );
 };
 
+const loginPath = '/user/login';
+
 const Login: React.FC = () => {
-  const [userLoginState, setUserLoginState] = useState<API.LoginResult>({});
+  const [userLoginState, setUserLoginState] = useState<Auth.LoginResult>({});
   const [type, setType] = useState<string>('account');
   const { initialState, setInitialState } = useModel('@@initialState');
 
   const intl = useIntl();
 
   const fetchUserInfo = async () => {
-    const userInfo = await initialState?.fetchUserInfo?.();
-    if (userInfo) {
-      await setInitialState((s) => ({
-        ...s,
-        currentUser: userInfo,
-      }));
+    console.log('initialState :', initialState);
+    if (initialState?.fetchUserInfo) {
+      const { user } = await initialState.fetchUserInfo();
+      if (user) {
+        await setInitialState((s) => ({
+          ...s,
+          currentUser: user,
+        }));
+      }
+    } else {
+      await queryCurrentUser();
     }
   };
 
-  const handleSubmit = async (values: API.LoginParams) => {
+  const handleSubmit = async (values: Auth.LoginParams) => {
     try {
       // 登录
-      const msg = await login({ ...values, type });
-      if (msg.status === 'ok') {
+      const msg = await login({ ...values, type }, { skipErrorHandler: true });
+      if (msg?.code === 0) {
         const defaultLoginSuccessMessage = intl.formatMessage({
           id: 'pages.login.success',
           defaultMessage: '登录成功！',
@@ -64,12 +71,16 @@ const Login: React.FC = () => {
         message.success(defaultLoginSuccessMessage);
         await fetchUserInfo();
         const urlParams = new URL(window.location.href).searchParams;
-        history.push(urlParams.get('redirect') || '/');
+        const redirect = urlParams.get('redirect');
+        console.log('redirect:', redirect);
+        let path = loginPath === redirect ? '/' : redirect || '/';
+        console.log('path:', path);
+        history.push('/');
         return;
       }
       console.log(msg);
       // 如果失败去设置用户错误信息
-      setUserLoginState(msg);
+      // setUserLoginState(msg);
     } catch (error) {
       const defaultLoginFailureMessage = intl.formatMessage({
         id: 'pages.login.failure',

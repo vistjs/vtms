@@ -1,30 +1,46 @@
 import { useState } from 'react';
 import { PlusOutlined } from '@ant-design/icons';
-import { Button, Card, List, Typography } from 'antd';
-import { useRequest, request } from '@umijs/max';
-import { queryFakeList } from '@/services/ant-design-pro/api';
+import { Button, Card, List, Typography, Tooltip } from 'antd';
+import { useRequest, request, Link, useAccess, Access } from '@umijs/max';
 import {
   ModalForm,
   ProFormText,
   ProFormTextArea,
   ProFormUploadButton,
   PageContainer,
+  ProFormSelect,
 } from '@ant-design/pro-components';
-import { message } from 'antd';
+import { message, Avatar, Image } from 'antd';
 import type { CardListItemDataType } from './data';
 import styles from './style.less';
 
 const { Paragraph } = Typography;
 
 const CardList = () => {
+  const access = useAccess();
+
   const { data, run, loading } = useRequest(() => {
     return request<Record<string, any>>('/api/v1/projects');
   });
 
+  const { data: users } = useRequest(() => {
+    return request<Record<string, any>>('/api/v1/user/all');
+  });
+
+  const usersSelects = Object.fromEntries(
+    users?.list?.map((item: any) => [item._id, item.username]) || [],
+  );
+
   const [updateVisible, setUpdateVisible] = useState(false);
   const [editing, setEditing] = useState({});
 
-  const list = data?.list || [];
+  const list = (data?.list || []).map((item: any) => {
+    return {
+      ...item,
+      owners: item?.ownerRole?.users,
+      members: item?.memberRole?.users,
+    };
+  });
 
   const changeUpdate = (index: number) => {
     setEditing(list[index - 1]);
@@ -75,22 +91,42 @@ const CardList = () => {
                     hoverable
                     className={styles.card}
                     actions={[
-                      <a
-                        key="option1"
-                        onClick={() => {
-                          changeUpdate(index);
-                        }}
-                      >
-                        修改
-                      </a>,
-                      <a key="option2" onClick={() => deleteItem(item.seq as number)}>
-                        删除
-                      </a>,
+                      <Link to={`/project/${item.seq}/cases`}>详情</Link>,
+                      <Access accessible={access.canEditProject(item.owners)} fallback={null}>
+                        <a
+                          key="option2"
+                          onClick={() => {
+                            changeUpdate(index);
+                          }}
+                        >
+                          修改
+                        </a>
+                      </Access>,
+                      <Access accessible={access.canAdmin} fallback={null}>
+                        <a key="option3" onClick={() => deleteItem(item.seq as number)}>
+                          删除
+                        </a>
+                      </Access>,
                     ]}
                   >
                     <Card.Meta
-                      avatar={<img alt="" className={styles.cardAvatar} src={item.logo} />}
-                      title={<a>{item.name}</a>}
+                      avatar={
+                        item.logo ? (
+                          <Avatar
+                            src={
+                              <Image
+                                src={item.logo}
+                                style={{
+                                  width: 48,
+                                }}
+                              />
+                            }
+                          />
+                        ) : (
+                          <Avatar size={48}>{item?.name?.slice(0, 1)}</Avatar>
+                        )
+                      }
+                      title={item.name}
                       description={
                         <Paragraph className={styles.item} ellipsis={{ rows: 3 }}>
                           {item.desc}
@@ -106,7 +142,12 @@ const CardList = () => {
                 <ModalForm
                   width={480}
                   trigger={
-                    <Button type="dashed" className={styles.newButton}>
+                    <Button
+                      type="dashed"
+                      className={styles.newButton}
+                      disabled={!access.canAdmin}
+                      title={access.canAdmin ? '' : '请联系管理员新建项目'}
+                    >
                       <PlusOutlined /> 新增项目
                     </Button>
                   }
@@ -115,16 +156,21 @@ const CardList = () => {
                     const formData = new FormData();
                     formData.append('name', values.name);
                     formData.append('desc', values.desc || '');
-                    formData.append('logo', values.logo[0]?.thumbUrl || '');
-                    await request<Record<string, any>>('/api/v1/project/create', {
-                      method: 'PUT',
-                      data: formData,
-                      requestType: 'form',
-                    }).then((res) => {
-                      console.log('res: ', res);
-                      message.success('提交成功');
-                    });
-                    return true;
+                    formData.append('logo', (values.logo && values.logo[0]?.thumbUrl) || '');
+                    try {
+                      await request<Record<string, any>>('/api/v1/project/create', {
+                        method: 'PUT',
+                        data: formData,
+                        requestType: 'form',
+                      }).then((res) => {
+                        console.log('res: ', res);
+                        message.success('创建成功');
+                      });
+                      run();
+                      return true;
+                    } catch (e) {
+                      return false;
+                    }
                   }}
                 >
                   <ProFormText
@@ -166,16 +212,22 @@ const CardList = () => {
           formData.append('name', values.name);
           formData.append('desc', values.desc || '');
           formData.append('logo', values.logo[0]?.thumbUrl || '');
-          await request<Record<string, any>>(`/api/v1/project/${(editing as any).seq}`, {
-            method: 'PUT',
-            data: formData,
-            requestType: 'form',
-          }).then((res) => {
-            console.log('res: ', res);
-            message.success('提交成功');
-          });
-          run();
-          return true;
+          formData.append('owners', (values.owners || []).join(','));
+          formData.append('members', (values.members || []).join(','));
+          try {
+            await request<Record<string, any>>(`/api/v1/project/${(editing as any).seq}`, {
+              method: 'PUT',
+              data: formData,
+              requestType: 'form',
+            }).then((res) => {
+              console.log('res: ', res);
+              message.success('修改成功');
+            });
+            run();
+            return true;
+          } catch (e) {
+            return false;
+          }
         }}
       >
         <ProFormText
@@ -194,6 +246,20 @@ const CardList = () => {
             name: 'file',
             listType: 'picture-card',
           }}
+        />
+        <ProFormSelect
+          name="owners"
+          label="管理员"
+          valueEnum={usersSelects}
+          fieldProps={{ showSearch: true, mode: 'multiple' }}
+          placeholder="Please select"
+        />
+        <ProFormSelect
+          name="members"
+          label="项目成员"
+          valueEnum={usersSelects}
+          fieldProps={{ showSearch: true, mode: 'multiple' }}
+          placeholder="Please select"
         />
       </ModalForm>
     </PageContainer>
