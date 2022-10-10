@@ -4,7 +4,7 @@ import nextConnect from 'next-connect';
 
 import conn from '@/lib/mongoose';
 import UserModel from '@/models/user';
-import { createUser } from '@/middleware/auth-utils/auth';
+import { createUser } from '@/middleware/auth_utils/auth';
 import userIsAdminAuth from '@/middleware/user';
 import auth from '@/middleware/auth';
 import { normalizeSuccess, normalizeError } from '@/utils';

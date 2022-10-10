@@ -6,8 +6,8 @@ import nextConnect from 'next-connect';
 import type { NextApiRequestWithContext } from '@/types';
 
 import auth, { sessionOpts } from '@/middleware/auth';
-import passport from '@/middleware/auth-utils/passport';
-import { createLoginSession } from '@/middleware/auth-utils/auth';
+import passport from '@/middleware/auth_utils/passport';
+import { createLoginSession } from '@/middleware/auth_utils/auth';
 import { ErrorCode } from '@/constant';
 import { normalizeSuccess, normalizeError } from '@/utils';
 

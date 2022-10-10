@@ -127,7 +127,7 @@ handler.put(async (req: NextApiRequest, res: NextApiResponse) => {
 
     if (targetStatus === CaseStatus.ACTIVE) {
       // 代表用例成功
-      if (caseInstance === CaseStatus.RUNNING) {
+      if (caseInstance.status === CaseStatus.RUNNING) {
         caseInstance.status = CaseStatus.ACTIVE;
         await caseInstance.save();
       } else {
@@ -137,7 +137,7 @@ handler.put(async (req: NextApiRequest, res: NextApiResponse) => {
 
     if (targetStatus === CaseStatus.ERROR) {
       // 代表用例失败
-      if (caseInstance === CaseStatus.RUNNING) {
+      if (caseInstance.status === CaseStatus.RUNNING) {
         caseInstance.status = CaseStatus.ERROR;
         await caseInstance.save();
       } else {
@@ -148,8 +148,8 @@ handler.put(async (req: NextApiRequest, res: NextApiResponse) => {
     if (targetStatus === CaseStatus.RUNNING) {
       // 代表用例执行中
       if (
-        caseInstance === CaseStatus.ACTIVE ||
-        caseInstance === CaseStatus.ERROR
+        caseInstance.status === CaseStatus.ACTIVE ||
+        caseInstance.status === CaseStatus.ERROR
       ) {
         caseInstance.status = CaseStatus.ERROR;
         await caseInstance.save();

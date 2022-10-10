@@ -1,8 +1,8 @@
 import type { CookieSerializeOptions } from 'cookie';
 import nextConnect from 'next-connect';
 
-import passport from './auth-utils/passport';
-import session from './auth-utils/session';
+import passport from './auth_utils/passport';
+import session from './auth_utils/session';
 
 export const sessionOpts = {
   name: 'codeless-sso',

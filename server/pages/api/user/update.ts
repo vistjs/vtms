@@ -6,7 +6,7 @@ import userIsAdminAuth from '@/middleware/user';
 
 import nextConnect from 'next-connect';
 import { normalizeSuccess, normalizeError } from '@/utils';
-import { createUserSaltHash } from '@/middleware/auth-utils/auth';
+import { createUserSaltHash } from '@/middleware/auth_utils/auth';
 
 const handler = nextConnect();
 
