@@ -10,8 +10,8 @@ export interface IProject {
   category: Schema.Types.ObjectId;
   ownerRole: Schema.Types.ObjectId;
   memberRole: Schema.Types.ObjectId;
-  createAt?: number;
-  updateAt?: number;
+  createAt?: Date;
+  updateAt?: Date;
 }
 
 const projectSchema = new Schema<IProject>(

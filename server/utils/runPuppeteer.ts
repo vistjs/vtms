@@ -2,13 +2,12 @@ import puppeteer from 'puppeteer-core';
 import findChrome from 'carlo/lib/find_chrome';
 
 export async function runTask(
-  frames: any[],
-  apis: any[],
+  steps: any[],
+  mocks: any,
   url: string,
   width: number,
   height: number,
 ) {
-  const recordInfo = `w${width}h${height}`;
   const findChromePath = await findChrome({});
 
   const browser = await puppeteer.launch({
@@ -24,7 +23,8 @@ export async function runTask(
   const imgs: string[] = [];
   await page.exposeFunction('rtScreenshot', async (info: any) => {
     const img = (await page.screenshot({ encoding: 'base64' })) as string;
-    imgs.push(`data:image/png;base64,${img}`);
+    // imgs.push(`data:image/png;base64,${img}`);
+    imgs.push(img);
     return img;
   });
   let finishReplayResolve: any;
@@ -36,7 +36,7 @@ export async function runTask(
   });
 
   await page.exposeFunction('rtFetchRecords', () => {
-    return frames;
+    return [steps, mocks];
   });
 
   await page.goto(`${url}`);

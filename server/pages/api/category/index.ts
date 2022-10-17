@@ -1,5 +1,5 @@
 import type { NextApiRequest, NextApiResponse } from 'next';
-import conn from '@/lib/mongoose';
+import conn from '@/utils/mongoose';
 import Category from '@/models/category';
 
 import nextConnect from 'next-connect';
@@ -7,8 +7,7 @@ import Project from '@/models/project';
 import { getAllSubCategoryId, handleTree } from './util';
 import Case, { CaseStatus } from '@/models/case';
 import auth from '@/middleware/auth';
-import { normalizeSuccess, normalizeError } from '@/utils';
-import projectRoleHandle from '@/utils/projectRoleHandle';
+import { normalizeSuccess, normalizeError, projectRoleHandle } from '@/utils';
 import { NextApiRequestWithContext } from '@/types';
 
 const handler = nextConnect();

@@ -1,5 +1,5 @@
 import type { NextApiRequest, NextApiResponse } from 'next';
-import conn from '@/lib/mongoose';
+import conn from '@/utils/mongoose';
 import UserModel from '@/models/user';
 import auth from '@/middleware/auth';
 import userIsAdminAuth from '@/middleware/user';

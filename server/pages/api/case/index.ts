@@ -1,5 +1,5 @@
 import type { NextApiRequest, NextApiResponse } from 'next';
-import conn from '@/lib/mongoose';
+import conn from '@/utils/mongoose';
 import Case, { CaseStatus } from '@/models/case';
 import HttpStatus from 'http-status-codes';
 import nextConnect from 'next-connect';
@@ -11,7 +11,7 @@ import Project from '@/models/project';
 import auth from '@/middleware/auth';
 import type { NextApiRequestWithContext } from '@/types/index';
 import { normalizeSuccess, normalizeError } from '@/utils';
-import projectRoleHandle from '@/utils/projectRoleHandle';
+import projectRoleHandle from '@/utils';
 
 const handler = nextConnect();
 
@@ -146,7 +146,6 @@ handler.put(async (req: NextApiRequestWithContext, res: NextApiResponse) => {
       status,
       category: categoryId,
       lastOperator: req.user?._id,
-      updateAt: new Date(),
     });
 
     normalizeSuccess(res, { id });

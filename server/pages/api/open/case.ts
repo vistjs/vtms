@@ -1,5 +1,5 @@
 import type { NextApiRequest, NextApiResponse } from 'next';
-import conn from '@/lib/mongoose';
+import conn from '@/utils/mongoose';
 import Case, { CaseStatus } from '@/models/case';
 import moment from 'moment';
 import nextConnect from 'next-connect';
@@ -40,10 +40,10 @@ handler.post(async (req: NextApiRequest, res: NextApiResponse) => {
       'YYYY-MM-DD_HH:mm:ss',
     )} ${getRamdomStr()}`;
     const {
-      body: { name = defaultName, frames, apis, url, w, h, pid },
+      body: { name = defaultName, steps, mocks, url, width, height, pid },
     } = req;
 
-    if (!frames || !pid || !w || !h) {
+    if (!steps || !pid || !width || !height) {
       throw new Error('parameter validation failed');
     }
 
@@ -56,11 +56,13 @@ handler.post(async (req: NextApiRequest, res: NextApiResponse) => {
     }
     const caseInstance = await Case.create({
       name,
-      frames,
-      apis,
-      url,
-      width: w,
-      height: h,
+      steps,
+      mocks,
+      webInfo: {
+        url,
+        width,
+        height,
+      },
       project: project._id,
       category: project.category,
     });
@@ -69,46 +71,6 @@ handler.post(async (req: NextApiRequest, res: NextApiResponse) => {
   } catch (err: any) {
     console.log(err);
     normalizeError(res, err?.message);
-  }
-});
-
-handler.get(async (req: NextApiRequest, res: NextApiResponse) => {
-  try {
-    const {
-      query: { id, current, pageSize, projectId },
-    } = req;
-
-    await conn();
-    let caseInstances;
-    if (id) {
-      caseInstances = await Case.findOne({
-        _id: id,
-      });
-    } else {
-      if (!projectId) {
-        throw new Error('projectId is required');
-      }
-      const project = await Project.findOne({
-        seq: projectId,
-      });
-      if (!project) {
-        throw new Error('project do not exist');
-      }
-      const { offset, limit } = handlePagination(current, pageSize);
-      caseInstances = await Case.find({
-        project: project._id,
-        status: {
-          $in: [CaseStatus.ACTIVE, CaseStatus.RUNNING, CaseStatus.ERROR],
-        },
-      })
-        .skip(offset)
-        .limit(limit);
-    }
-
-    normalizeSuccess(res, { cases: caseInstances });
-  } catch (err: any) {
-    console.log(err);
-    normalizeError(res, err.message);
   }
 });
 

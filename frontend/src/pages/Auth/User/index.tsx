@@ -152,10 +152,6 @@ const User: React.FC = () => {
   return (
     <PageContainer>
       <ProTable<Auth.User, Auth.PageParams>
-        // headerTitle={intl.formatMessage({
-        //   id: 'pages.searchTable.title',
-        //   defaultMessage: 'Enquiry form',
-        // })}
         actionRef={actionRef}
         rowKey="username"
         search={{

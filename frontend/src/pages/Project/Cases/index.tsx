@@ -1,8 +1,5 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react';
-import { Form, Layout, message, Modal, Popconfirm, Steps, Tooltip, Tree } from 'antd';
-import type { DataNode } from 'antd/es/tree';
-import moment from 'moment';
-import { DeleteOutlined, EditOutlined, PlusOutlined } from '@ant-design/icons';
+import { Form, Layout, message, Modal, Popconfirm } from 'antd';
 import {
   ActionType,
   ProColumns,
@@ -11,31 +8,13 @@ import {
 } from '@ant-design/pro-components';
 import { ModalForm, PageContainer, ProFormText, ProTable } from '@ant-design/pro-components';
 import { FormattedMessage, useParams } from '@umijs/max';
-import {
-  addCategory,
-  deleteCategory,
-  getCases,
-  getCategories,
-  deleteCase,
-  updateCase,
-  updateCategory,
-} from './service';
-import { CaseListItem, caseStatus, caseStatusText, category, RecordType } from './constants';
+import { getCases, getCategories, deleteCase, updateCase } from './service';
+import { CaseListItem, caseStatus, caseStatusText, category } from './constants';
 import './index.less';
+import CaseSteps from './components/Steps';
+import CategoryTree from './components/CategoryTree';
 
 const { Sider, Content } = Layout;
-const { DirectoryTree } = Tree;
-const { Step } = Steps;
-
-enum categoryFormStatus {
-  HIDE,
-  ADD,
-  EDIT,
-}
-
-type categoryTreeNode = DataNode & {
-  label: string;
-};
 
 const handleCaseUpdate = async (fields: any) => {
   const hide = message.loading('Updating');
@@ -70,55 +49,12 @@ const handleCaseDelete = async (selectedRow: CaseListItem) => {
   }
 };
 
-const handleCategoryUpdate = async (title: string, id: string) => {
-  const hide = message.loading('Updating');
-  try {
-    await updateCategory(title, id);
-    hide();
-    message.success('Updated successfully and will refresh soon');
-    return true;
-  } catch (error: any) {
-    hide();
-    return false;
-  }
-};
-
-const handleCategoryAdd = async (title: string, parentId: string) => {
-  const hide = message.loading('adding');
-  try {
-    await addCategory(title, parentId);
-    hide();
-    message.success('add successfully and will refresh soon');
-    return true;
-  } catch (error: any) {
-    hide();
-    return false;
-  }
-};
-
-const handleCategoryDelete = async (categoryId: string) => {
-  const hide = message.loading('deleting');
-  try {
-    await deleteCategory(categoryId);
-    hide();
-    message.success('Deleted successfully and will refresh soon');
-    return true;
-  } catch (error: any) {
-    hide();
-    return false;
-  }
-};
-
 const Cases: React.FC = () => {
   const query = useParams();
   const [updateModalVisible, handleUpdateModalVisible] = useState<boolean>(false);
-  const [categoryModalVisible, handleCategoryModalStatus] = useState<number>(
-    categoryFormStatus.HIDE,
-  );
   const [caseFormRef] = Form.useForm();
-  const [categoryFormRef] = Form.useForm();
   const selectCategoryId = useRef('');
-  const [categoryTree, setCategoryTree] = useState<Array<categoryTreeNode>>([]);
+  const [categoryData, setCategoryData] = useState<category>();
   const actionRef = useRef<ActionType>();
 
   const columns: ProColumns<CaseListItem>[] = [
@@ -139,41 +75,7 @@ const Cases: React.FC = () => {
                       paddingTop: '20px',
                     }}
                   >
-                    <Steps direction="vertical">
-                      {entity.frames.map((item: any, index: string) => {
-                        let title;
-                        let subInfo;
-                        if (item.type === RecordType.MOUSE) {
-                          title = item.data.type;
-                        } else if (item.type === RecordType.INPUT) {
-                          title = RecordType[item.type].toLowerCase();
-                          subInfo = item.data.text;
-                        } else {
-                          title = RecordType[item.type].toLowerCase();
-                        }
-                        return (
-                          <Step
-                            status="process"
-                            key={index}
-                            title={title}
-                            description={
-                              <>
-                                {subInfo && (
-                                  <div
-                                    style={{
-                                      color: 'rgba(0, 0, 0, 0.45)',
-                                    }}
-                                  >
-                                    {subInfo}
-                                  </div>
-                                )}
-                                <div>{moment(item.time).format('YYYY-MM-DD hh:mm:ss')}</div>
-                              </>
-                            }
-                          />
-                        );
-                      })}
-                    </Steps>
+                    <CaseSteps dataSource={entity.steps} />
                   </div>
                 ),
               });
@@ -291,103 +193,25 @@ const Cases: React.FC = () => {
     [selectCategoryId],
   );
 
-  const getCategoryTree = useCallback((projectId: string) => {
-    getCategories(projectId).then(({ data }) => {
-      const maxLen = 13; // 超出需要用tooltip
-      const handleTree = (category: category, n = 0) => {
-        const { title, _id } = category;
-        const node: categoryTreeNode = {
-          key: _id,
-          label: title,
-          title: (
-            <>
-              <span className="tree-title-text">
-                {title.length > maxLen - n * 2 ? (
-                  <Tooltip placement="topLeft" title={title}>
-                    {title}
-                  </Tooltip>
-                ) : (
-                  title
-                )}
-              </span>
-              <span
-                className="tree-title-options"
-                data-id={category._id}
-                onClick={handleAddCategory}
-              >
-                {n < 4 && <PlusOutlined />}
-                {n > 0 && (
-                  <>
-                    <EditOutlined />
-                    <DeleteOutlined />
-                  </>
-                )}
-              </span>
-            </>
-          ),
-        };
-        if (category.children) {
-          node.children = category.children.map((item) => handleTree(item, n + 1));
-        } else {
-          node.isLeaf = true;
-        }
-        return node;
-      };
-      setCategoryTree([handleTree(data)]);
+  const getCategoryTree = useCallback(() => {
+    if (!query.projectId) return;
+    getCategories(query.projectId as string).then(({ data }) => {
+      setCategoryData(data);
     });
-  }, []);
-
-  const handleAddCategory: React.MouseEventHandler<HTMLSpanElement> = useCallback(async (e) => {
-    e.stopPropagation();
-    const id = e.currentTarget.dataset.id;
-    let target = e.target as HTMLSpanElement;
-    let type;
-    while (!type && target) {
-      const icon = target?.dataset?.icon;
-      if (icon) {
-        type = icon;
-      }
-      target = target.parentNode as HTMLSpanElement;
-    }
-    if (!id) {
-      return;
-    }
-    switch (type) {
-      case 'delete':
-        const success = await handleCategoryDelete(id);
-        if (success) {
-          getCategoryTree(query.projectId as string);
-        }
-        break;
-      case 'edit':
-        handleCategoryModalStatus(categoryFormStatus.EDIT);
-        const title = e.currentTarget.parentNode?.children[0].textContent;
-        categoryFormRef.setFieldsValue({
-          id,
-          title,
-        });
-        break;
-      case 'plus':
-        handleCategoryModalStatus(categoryFormStatus.ADD);
-        categoryFormRef.setFieldsValue({
-          title: '',
-          id,
-        });
-        break;
-    }
-  }, []);
+  }, [query.projectId]);
 
   useEffect(() => {
-    if (query.projectId) {
-      getCategoryTree(query.projectId);
-    }
-  }, []);
+    getCategoryTree();
+  }, [getCategoryTree]);
 
   return (
     <PageContainer>
       <Layout>
         <Sider
           width="240"
+          collapsible
+          collapsedWidth={20}
+          theme="light"
           style={{
             backgroundColor: '#fff',
             marginRight: '16px',
@@ -397,13 +221,11 @@ const Cases: React.FC = () => {
             overflow: 'hidden',
           }}
         >
-          {categoryTree.length > 0 && (
-            <DirectoryTree
-              className="case-tree"
+          {categoryData && (
+            <CategoryTree
               onSelect={treeSelectHandle}
-              treeData={categoryTree}
-              defaultExpandedKeys={[categoryTree[0]?.key]}
-              defaultSelectedKeys={[categoryTree[0]?.key]}
+              dataSource={categoryData}
+              onChange={getCategoryTree}
             />
           )}
         </Sider>
@@ -484,18 +306,19 @@ const Cases: React.FC = () => {
               label: string;
               children?: selectNode[];
             };
-            const handleTree = (category: categoryTreeNode) => {
-              const node: selectNode = {
-                value: category.key as string,
-                label: category.label,
-              };
+            const handleTree = (category: category) => {
+              const { title, _id } = category;
 
+              const node: selectNode = {
+                value: _id,
+                label: title,
+              };
               if (category.children) {
-                node.children = category.children.map((item: any) => handleTree(item));
+                node.children = category.children.map((item) => handleTree(item));
               }
               return node;
             };
-            return [handleTree(categoryTree[0])];
+            return categoryData ? [handleTree(categoryData)] : [];
           }}
           // tree-select args
           fieldProps={{
@@ -508,45 +331,6 @@ const Cases: React.FC = () => {
             multiple: false,
             treeNodeFilterProp: 'label',
           }}
-        />
-      </ModalForm>
-
-      <ModalForm
-        title={`${categoryModalVisible === categoryFormStatus.EDIT ? 'Edit' : 'New'} Category`}
-        width="460px"
-        form={categoryFormRef}
-        visible={categoryModalVisible !== categoryFormStatus.HIDE}
-        onVisibleChange={(value) => {
-          if (!value) {
-            handleCategoryModalStatus(categoryFormStatus.HIDE);
-          }
-        }}
-        onFinish={async (value) => {
-          try {
-            let success;
-            if (categoryModalVisible === categoryFormStatus.EDIT) {
-              success = await handleCategoryUpdate(value.title, value.id);
-            } else {
-              success = await handleCategoryAdd(value.title, value.id);
-            }
-            if (success) {
-              getCategoryTree(query.projectId as string);
-            }
-          } catch (e) {
-            console.log(e);
-          }
-          handleCategoryModalStatus(categoryFormStatus.HIDE);
-        }}
-      >
-        <ProFormText name="id" hidden />
-        <ProFormText
-          rules={[
-            {
-              required: true,
-            },
-          ]}
-          name="title"
-          label="名称"
         />
       </ModalForm>
     </PageContainer>

@@ -35,7 +35,7 @@ const LoginMessage: React.FC<{
   );
 };
 
-const loginPath = '/user/login';
+const loginPath = '/auth/login';
 
 const Login: React.FC = () => {
   const [userLoginState, setUserLoginState] = useState<Auth.LoginResult>({});

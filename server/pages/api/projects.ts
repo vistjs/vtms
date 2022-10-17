@@ -1,5 +1,5 @@
 import type { NextApiRequest, NextApiResponse } from 'next';
-import conn from '@/lib/mongoose';
+import conn from '@/utils/mongoose';
 import Project from '@/models/project';
 import nextConnect from 'next-connect';
 import { PROJECT_STATUS } from '@/constant';

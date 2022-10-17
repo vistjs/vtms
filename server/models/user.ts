@@ -1,6 +1,6 @@
 import { Schema, models, model, Types } from 'mongoose';
 import { HydratedDocument } from 'mongoose';
-import conn from '@/lib/mongoose';
+import conn from '@/utils/mongoose';
 import { IRole } from './role';
 export interface InputUser {
   username: string;
@@ -14,6 +14,8 @@ export interface IUser {
   salt: string;
   isAdmin: boolean;
   roles?: IRole[];
+  createAt?: Date;
+  updateAt?: Date;
 }
 
 export type DocumentIUser = HydratedDocument<IUser>;

@@ -1,19 +1,5 @@
 ﻿export default [
   {
-    path: '/user',
-    layout: false,
-    routes: [
-      {
-        name: 'login',
-        path: '/user/login',
-        component: './User/Login',
-      },
-      {
-        component: './404',
-      },
-    ],
-  },
-  {
     path: '/auth',
     name: 'auth',
     icon: 'team',
@@ -29,6 +15,12 @@
         path: '/auth/role',
         name: 'role',
         component: './Auth/Role',
+      },
+      {
+        name: 'login',
+        path: '/auth/login',
+        component: './Auth/Login',
+        hideInMenu: true,
       },
       {
         component: './404',
@@ -51,6 +43,19 @@
         name: 'cases',
         component: './Project/Cases',
         hideInMenu: true,
+      },
+      {
+        path: '/project/task',
+        name: 'task',
+        component: './Project/Task',
+        hideInMenu: true,
+      },
+      {
+        path: '/project/report',
+        name: 'report',
+        component: './Project/Report',
+        hideInMenu: true,
+        menuRender: false,
       },
       {
         component: './404',

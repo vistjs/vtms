@@ -2,8 +2,8 @@ export type CaseListItem = {
   _id: string;
   name: string;
   status: number;
-  frames: any;
-  apis: any;
+  steps: any[];
+  mocks: any;
   runs: number;
   lastRun?: string;
   url: string;

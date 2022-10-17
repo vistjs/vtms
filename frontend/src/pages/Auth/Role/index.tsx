@@ -44,15 +44,6 @@ enum ModalStatus {
 }
 
 const Role: React.FC = () => {
-  /**
-   * @en-US Pop-up window of new window
-   * @zh-CN 新建窗口的弹窗
-   *  */
-  const [createModalVisible, handleModalVisible] = useState<boolean>(false);
-  /**
-   * @en-US The pop-up window of the distribution update window
-   * @zh-CN 分布更新窗口的弹窗
-   * */
   const [updateModalVisible, setUpdateModalVisible] = useState({
     visible: false,
     status: ModalStatus.Add,
@@ -60,18 +51,10 @@ const Role: React.FC = () => {
   const [addUserModalVisible, setAddUserModalVisible] = useState(false);
   const [deleteUserModalVisible, setDeleteUserModalVisible] = useState(false);
 
-  const [showDetail, setShowDetail] = useState<boolean>(false);
-
   const actionRef = useRef<ActionType>();
 
   const [users, setUsers] = useState<Auth.User[]>([]);
   const [addUserId, setAddUserId] = useState<string>();
-
-  /**
-   * @en-US International configuration
-   * @zh-CN 国际化配置
-   * */
-  const intl = useIntl();
 
   const columns: ProColumns<Auth.Role>[] = [
     {
@@ -84,55 +67,9 @@ const Role: React.FC = () => {
       dataIndex: 'desc',
       valueType: 'textarea',
     },
-    // {
-    //   title: <FormattedMessage id="pages.searchTable.titleOption" defaultMessage="Operating" />,
-    //   dataIndex: 'option',
-    //   valueType: 'option',
-    //   render: (_, record) => [
-    //     <Button
-    //       type="link"
-    //       onClick={() => {
-    //         setAddUserModalVisible(true);
-    //       }}
-    //     >
-    //       增加用户
-    //     </Button>,
-    //     <Button
-    //       type="link"
-    //       danger
-    //       onClick={() => {
-    //         setDeleteUserModalVisible(true);
-    //       }}
-    //     >
-    //       删除用户
-    //     </Button>,
-    //   ],
-    // },
   ];
 
-  const handleSearch = (newValue: string) => {
-    if (newValue) {
-      // fetch(newValue, setData);
-    } else {
-      // setData([]);
-    }
-  };
-
-  // useEffect(() => {
-  //   getUsersApi({}).then((users) => {
-  //     console.log('users users in roles page:', users);
-  //     if (users.data?.list?.length) {
-  //       setUsers(users.data.list);
-  //     }
-  //     // setUsers(users)
-  //   });
-  // }, []);
-
   const options = users?.map((user) => <Option key={user.id}>{user.username}</Option>);
-
-  // const onSearch = (value: string) => {
-  //   console.log('search:', value);
-  // };
 
   const onChange = (userId: string) => {
     console.log(`selected userId: ${userId}`);
@@ -142,10 +79,6 @@ const Role: React.FC = () => {
   return (
     <PageContainer>
       <ProTable<Auth.Role, Auth.PageParams>
-        // headerTitle={intl.formatMessage({
-        //   id: 'pages.searchTable.title',
-        //   defaultMessage: 'Enquiry form',
-        // })}
         actionRef={actionRef}
         rowKey="_id"
         search={{
@@ -224,30 +157,6 @@ const Role: React.FC = () => {
         />
         <ProFormTextArea width="md" name="desc" />
       </ModalForm>
-
-      {/* <Drawer
-        width={600}
-        visible={showDetail}
-        onClose={() => {
-          setCurrentRow(undefined);
-          setShowDetail(false);
-        }}
-        closable={false}
-      >
-        {currentRow?.name && (
-          <ProDescriptions<API.RuleListItem>
-            column={2}
-            title={currentRow?.name}
-            request={async () => ({
-              data: currentRow || {},
-            })}
-            params={{
-              id: currentRow?.name,
-            }}
-            columns={columns as ProDescriptionsItemProps<API.RuleListItem>[]}
-          />
-        )}
-      </Drawer> */}
     </PageContainer>
   );
 };

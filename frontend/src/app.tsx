@@ -12,7 +12,7 @@ import { currentUser as queryCurrentUser } from '@/pages/Auth/service';
 import { ErrorCode } from '@/constant';
 
 const isDev = process.env.NODE_ENV === 'development';
-const loginPath = '/user/login';
+const loginPath = '/auth/login';
 
 /**
  * @see  https://umijs.org/zh-CN/plugins/plugin-initial-state
@@ -28,6 +28,7 @@ export async function getInitialState(): Promise<{
       const msg = await queryCurrentUser();
       return msg.data;
     } catch (error) {
+      console.log('fetchUserInfo error', error);
       history.push(loginPath);
     }
     return undefined;

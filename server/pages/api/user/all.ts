@@ -3,7 +3,7 @@ import nextConnect from 'next-connect';
 
 import type { NextApiRequestWithContext } from '@/types/index';
 
-import conn from '@/lib/mongoose';
+import conn from '@/utils/mongoose';
 import UserModel from '@/models/user';
 import auth from '@/middleware/auth';
 import { normalizeSuccess, normalizeError } from '@/utils';

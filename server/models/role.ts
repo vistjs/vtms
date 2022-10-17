@@ -1,6 +1,6 @@
 import { Schema, models, model, Types } from 'mongoose';
 
-import conn from '@/lib/mongoose';
+import conn from '@/utils/mongoose';
 import { ROLE_TYPE } from '@/constant';
 
 export interface IRole {
@@ -9,6 +9,8 @@ export interface IRole {
   project?: Types.ObjectId;
   users?: Types.ObjectId[];
   desc?: string;
+  createAt?: Date;
+  updateAt?: Date;
 }
 
 const roleSchema = new Schema<IRole>(

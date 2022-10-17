@@ -1,5 +1,5 @@
 module.exports = {
-  extends: 'next/core-web-vitals',
+  extends: ['next/babel', 'next/core-web-vitals'],
   settings: {
     'import/resolver': {
       alias: {

@@ -2,7 +2,7 @@ import type { NextApiRequest, NextApiResponse } from 'next';
 import HttpStatus from 'http-status-codes';
 import nextConnect from 'next-connect';
 
-import conn from '@/lib/mongoose';
+import conn from '@/utils/mongoose';
 import UserModel from '@/models/user';
 import { createUser } from '@/middleware/auth_utils/auth';
 import userIsAdminAuth from '@/middleware/user';

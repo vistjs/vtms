@@ -1,10 +1,13 @@
 import type { NextApiRequest, NextApiResponse } from 'next';
-import conn from '@/lib/mongoose';
+import conn from '@/utils/mongoose';
 import Case, { CaseStatus } from '@/models/case';
 import nextConnect from 'next-connect';
 import Project from '@/models/project';
-import { normalizeSuccess, normalizeError, handlePagination } from '@/utils';
-import { runTask } from '@/lib/runPuppeteer';
+import Category from '@/models/category';
+import Task from '@/models/task';
+import { normalizeSuccess, normalizeError } from '@/utils';
+import { runTask } from '@/utils/runPuppeteer';
+const diffImages = require('@/utils/imgDiff.js');
 import Cors from 'cors';
 
 // Initializing the cors middleware
@@ -33,45 +36,148 @@ function runMiddleware(
 
 const handler = nextConnect();
 
+interface RunResult {
+  caseId: string;
+  isError: boolean;
+  errorMsg?: string;
+  total: number;
+  success?: number;
+  failed?: number;
+}
+
 handler.get(async (req: NextApiRequest, res: NextApiResponse) => {
   try {
     const {
-      query: { projectId, commitId },
+      query: { pid, cid, commit },
     } = req;
 
     await conn();
-    if (!projectId) {
-      throw new Error('projectId is required');
+    if (!commit) {
+      throw new Error('parameter error, need commit');
+    } else if (commit === 'baseline') {
+      throw new Error('parameter error, commit can not be baseline');
     }
-    const project = await Project.findOne({
-      seq: projectId,
-    });
-    if (!project) {
-      throw new Error('project do not exist');
+    let caseInstances;
+    if (pid) {
+      const project = await Project.findOne({
+        seq: pid,
+      });
+      if (!project) {
+        throw new Error('project do not exist');
+      }
+      caseInstances = await Case.find({
+        project: project._id,
+        status: {
+          $in: [CaseStatus.ACTIVE, CaseStatus.RUNNING, CaseStatus.ERROR],
+        },
+      }).lean();
+    } else if (cid) {
+      const category = await Category.findOne({
+        _id: cid,
+      });
+      if (!category) {
+        throw new Error('category do not exist');
+      }
+      caseInstances = await Case.find({
+        category: category._id,
+        status: {
+          $in: [CaseStatus.ACTIVE, CaseStatus.RUNNING, CaseStatus.ERROR],
+        },
+      }).lean();
+    } else {
+      throw new Error('parameter validation failed');
     }
-    const caseInstances = await Case.find({
-      project: project._id,
-      status: {
-        $in: [CaseStatus.ACTIVE, CaseStatus.RUNNING, CaseStatus.ERROR],
-      },
-    }).lean();
 
-    let imgs: string[] = [];
-    await Promise.all(
-      caseInstances.map(async (ins) => {
-        const igs = await runTask(
-          ins.frames,
-          ins.apis,
-          ins.url,
-          ins.width,
-          ins.height,
+    const results: RunResult[] = [];
+
+    const promises = caseInstances.map(async (ins) => {
+      let total = 0;
+      const {
+        steps,
+        mocks,
+        webInfo: { url, width, height },
+      } = ins;
+      try {
+        const imageDatas = await runTask(steps, mocks, url, width, height);
+        total = imageDatas.length;
+        let task = await Task.findOne({ case: ins._id });
+        if (!task) {
+          task = new Task({
+            case: ins._id,
+            results: {
+              baseline: {
+                name: commit,
+                screenshots: imageDatas.map((data) => ({ test: data })),
+                total,
+                createAt: new Date(),
+                updateAt: new Date(),
+              },
+            },
+          });
+          await task.save();
+          return {
+            caseId: ins._id,
+            isError: false,
+            total,
+          };
+        }
+        const references = task.results.baseline.screenshots.map(
+          ({ test }: any) => test,
         );
-        imgs = imgs.concat(igs);
-      }),
-    );
-    normalizeSuccess(res, { images: imgs.slice(-1) });
+        if (references.length !== imageDatas.length) {
+          return {
+            caseId: ins._id,
+            isError: true,
+            errorMsg:
+              'the quantity of screenshots is different from that of baseline',
+            total,
+          };
+        }
+        const diffs = await diffImages(references, imageDatas, width, height);
+        const failed = diffs.reduce(
+          (previousValue: number, currentValue: string) =>
+            previousValue + (currentValue.length > 0 ? 1 : 0),
+          0,
+        );
+
+        task.set(`results.${commit}`, {
+          name: commit,
+          screenshots: imageDatas.map((data, index) => ({
+            test: data,
+            diff: diffs[index],
+            passed: !diffs[index],
+          })),
+          total,
+          failed,
+          success: total - failed,
+          createAt: task.results[commit as string]?.createAt || new Date(),
+          updateAt: new Date(),
+        });
+        await task.save();
+
+        return {
+          caseId: ins._id,
+          isError: false,
+          total,
+          failed,
+          success: total - failed,
+        };
+      } catch (err: any) {
+        return {
+          caseId: ins._id,
+          isError: true,
+          errorMsg: err.message,
+          total,
+        };
+      }
+    });
+
+    // 按次序输出
+    for (const promise of promises) {
+      results.push(await promise);
+    }
+    normalizeSuccess(res, { results });
   } catch (err: any) {
-    console.log(err);
     normalizeError(res, err.message);
   }
 });

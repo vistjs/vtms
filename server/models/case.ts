@@ -10,92 +10,82 @@ export enum CaseStatus {
 
 interface Case {
   name: string;
-  frames: Schema.Types.Mixed;
-  apis: Schema.Types.Mixed;
-  url: string;
+  category: Schema.Types.ObjectId;
+  project: Schema.Types.ObjectId;
+  webInfo: {
+    url: string;
+    width: number;
+    height: number;
+  };
+  steps: Schema.Types.Mixed;
+  mocks: Schema.Types.Mixed;
   status: CaseStatus;
   runs: number;
   lastRun: Date;
-  lastOperator: Schema.Types.ObjectId;
-  width: number;
-  height: number;
-  category: Schema.Types.ObjectId;
-  project: Schema.Types.ObjectId;
   createAt?: Date;
   updateAt?: Date;
+  lastOperator: Schema.Types.ObjectId;
 }
 
-const CaseSchema = new Schema<Case>({
-  name: {
-    type: String,
-    required: true,
-    unique: true,
-    index: true,
+const CaseSchema = new Schema<Case>(
+  {
+    name: {
+      type: String,
+      required: true,
+      unique: true,
+      index: true,
+    },
+    category: {
+      type: Schema.Types.ObjectId,
+      ref: 'Category',
+    },
+    project: {
+      type: Schema.Types.ObjectId,
+      ref: 'Project',
+    },
+    webInfo: {
+      url: {
+        type: String,
+        required: true,
+      },
+      width: {
+        type: Number,
+        required: true,
+      },
+      height: {
+        type: Number,
+        required: true,
+      },
+    },
+    steps: {
+      type: Schema.Types.Mixed,
+      required: true,
+    },
+    mocks: {
+      type: Schema.Types.Mixed,
+    },
+    status: {
+      type: Number,
+      default: CaseStatus.NOTACTIVE,
+    },
+    runs: {
+      type: Number,
+      required: true,
+      default: 0,
+    },
+    lastRun: {
+      type: Date,
+      required: false,
+    },
+    lastOperator: {
+      type: Schema.Types.ObjectId,
+      ref: 'User',
+    },
   },
-  status: {
-    type: Number,
-    default: CaseStatus.NOTACTIVE,
-    index: true,
-  },
-  frames: {
-    type: Schema.Types.Mixed,
-    required: true,
-  },
-  apis: {
-    type: Schema.Types.Mixed,
-    required: true,
-  },
-  runs: {
-    type: Number,
-    required: true,
-    default: 0,
-  },
-  lastRun: {
-    type: Date,
-    required: false,
-  },
-  lastOperator: {
-    type: Schema.Types.ObjectId,
-    ref: 'User',
-  },
-  url: {
-    type: String,
-    required: true,
-  },
-  width: {
-    type: Number,
-    required: true,
-  },
-  height: {
-    type: Number,
-    required: true,
-  },
-  category: {
-    type: Schema.Types.ObjectId,
-    ref: 'Category',
-  },
-  project: {
-    type: Schema.Types.ObjectId,
-    ref: 'Project',
-  },
-  createAt: {
-    type: Date,
-    required: false,
-  },
-  updateAt: {
-    type: Date,
-    required: false,
-  },
-});
+  { timestamps: true },
+);
 
-CaseSchema.pre('save', function (next) {
-  if (!this.createAt) {
-    this.createAt = new Date();
-    this.updateAt = new Date();
-  }
-  // 只有修改status和name才更新updateAt
-  next();
-});
+CaseSchema.index({ name: 1 });
 
 const Case = models.Case || model<Case>('Case', CaseSchema);
 

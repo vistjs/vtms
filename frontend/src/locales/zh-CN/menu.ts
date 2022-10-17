@@ -52,8 +52,11 @@ export default {
   'menu.auth': '权限管理',
   'menu.auth.user': '用户管理',
   'menu.auth.role': '角色管理',
-  'menu.project': '用例管理',
+  'menu.auth.login': '登录',
+  'menu.project': '测试管理',
   'menu.project.list': '项目管理',
-  'menu.project.cases': '用例页',
+  'menu.project.task': '任务管理',
+  'menu.project.report': '视觉对比',
+  'menu.project.cases': '用例管理',
   'menu.project.mocks': 'mock页',
 };
