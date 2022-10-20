@@ -1,5 +1,17 @@
 ﻿export default [
   {
+    path: '/login',
+    component: './Login',
+    // 不展示顶栏
+    headerRender: false,
+    // 不展示页脚
+    footerRender: false,
+    // 不展示菜单
+    menuRender: false,
+    // 不展示菜单顶栏
+    menuHeaderRender: false,
+  },
+  {
     path: '/auth',
     name: 'auth',
     icon: 'team',
@@ -15,15 +27,6 @@
         path: '/auth/role',
         name: 'role',
         component: './Auth/Role',
-      },
-      {
-        name: 'login',
-        path: '/auth/login',
-        component: './Auth/Login',
-        hideInMenu: true,
-      },
-      {
-        component: './404',
       },
     ],
   },
@@ -42,23 +45,25 @@
         path: '/project/:projectId/cases',
         name: 'cases',
         component: './Project/Cases',
-        hideInMenu: true,
       },
+    ],
+  },
+  {
+    path: '/case',
+    name: 'case',
+    hideInMenu: true,
+    hideInBreadcrumb: true,
+    routes: [
       {
-        path: '/project/task',
+        path: '/case/:caseId/task',
         name: 'task',
-        component: './Project/Task',
-        hideInMenu: true,
+        component: './Case/Task',
       },
       {
-        path: '/project/report',
+        path: '/case/:caseId/report',
         name: 'report',
-        component: './Project/Report',
-        hideInMenu: true,
+        component: './Case/Report',
         menuRender: false,
-      },
-      {
-        component: './404',
       },
     ],
   },
@@ -67,6 +72,7 @@
     redirect: '/project/list',
   },
   {
+    path: '/*',
     component: './404',
   },
 ];

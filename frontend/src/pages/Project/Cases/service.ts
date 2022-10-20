@@ -14,7 +14,7 @@ export async function getCases(
     updateAt?: Sorter;
   },
 ) {
-  return request<CaseList>('/api/v1/case', {
+  return request<CaseList>('/api/v1/cases', {
     method: 'GET',
     params: {
       ...params,
@@ -23,24 +23,21 @@ export async function getCases(
   });
 }
 
-export async function updateCase(data: { [key: string]: any }) {
-  return request('/api/v1/case', {
+export async function updateCase(id: string, data: { [key: string]: any }) {
+  return request(`/api/v1/cases/${id}`, {
     method: 'PUT',
     data,
   });
 }
 
 export async function deleteCase(id: string) {
-  return request<Record<string, any>>('/api/v1/case', {
+  return request<Record<string, any>>(`/api/v1/cases/${id}`, {
     method: 'DELETE',
-    data: {
-      id,
-    },
   });
 }
 
 export async function getCategories(projectId: string) {
-  return request<categoryResult>('/api/v1/category', {
+  return request<categoryResult>('/api/v1/categories', {
     method: 'GET',
     params: {
       projectId,
@@ -49,30 +46,25 @@ export async function getCategories(projectId: string) {
 }
 
 export async function addCategory(title: string, parentId: string) {
-  return request<categoryResult>('/api/v1/category', {
+  return request<categoryResult>(`/api/v1/categories/${parentId}`, {
     method: 'POST',
     data: {
       title,
-      parentId,
     },
   });
 }
 
 export async function updateCategory(title: string, id: string) {
-  return request<categoryResult>('/api/v1/category', {
+  return request<categoryResult>(`/api/v1/categories/${id}`, {
     method: 'PUT',
     data: {
       title,
-      id,
     },
   });
 }
 
 export async function deleteCategory(id: string) {
-  return request<categoryResult>('/api/v1/category', {
+  return request<categoryResult>(`/api/v1/categories/${id}`, {
     method: 'DELETE',
-    data: {
-      id,
-    },
   });
 }

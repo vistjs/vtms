@@ -1,6 +1,6 @@
 import type { NextApiResponse } from 'next';
 import { NextApiRequestWithContext } from '../types';
-import { normalizeError } from '@/utils';
+import { normalizeError } from '@/utils/resHelper';
 import { ErrorCode } from '@/constant';
 
 export default async function userIsAdminAuth(

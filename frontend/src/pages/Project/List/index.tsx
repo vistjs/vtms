@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { PlusOutlined } from '@ant-design/icons';
-import { Button, Card, List, Typography, Tooltip } from 'antd';
-import { useRequest, request, Link, useAccess, Access } from '@umijs/max';
+import { Button, Card, List, Typography } from 'antd';
+import { useRequest, Link, useAccess, Access } from '@umijs/max';
 import {
   ModalForm,
   ProFormText,
@@ -11,7 +11,8 @@ import {
   ProFormSelect,
 } from '@ant-design/pro-components';
 import { message, Avatar, Image } from 'antd';
-import type { CardListItemDataType } from './data';
+import { getProjects, getUsers, createProject, editProject, deleteProject } from './service';
+import type { CardListItemDataType } from './types';
 import styles from './style.less';
 
 const { Paragraph } = Typography;
@@ -19,13 +20,9 @@ const { Paragraph } = Typography;
 const CardList = () => {
   const access = useAccess();
 
-  const { data, run, loading } = useRequest(() => {
-    return request<Record<string, any>>('/api/v1/projects');
-  });
+  const { data, run, loading } = useRequest(getProjects);
 
-  const { data: users } = useRequest(() => {
-    return request<Record<string, any>>('/api/v1/user/all');
-  });
+  const { data: users } = useRequest(getUsers);
 
   const usersSelects = Object.fromEntries(
     users?.list?.map((item: any) => [item._id, item.username]) || [],
@@ -48,9 +45,7 @@ const CardList = () => {
   };
 
   const deleteItem = (seq: number) => {
-    return request<Record<string, any>>(`/api/v1/project/${seq}`, {
-      method: 'DELETE',
-    }).then((res) => {
+    return deleteProject(seq).then((res) => {
       message.success('删除成功');
       run();
     });
@@ -157,13 +152,10 @@ const CardList = () => {
                     formData.append('name', values.name);
                     formData.append('desc', values.desc || '');
                     formData.append('logo', (values.logo && values.logo[0]?.thumbUrl) || '');
+                    formData.append('owners', (values.owners || []).join(','));
+                    formData.append('members', (values.members || []).join(','));
                     try {
-                      await request<Record<string, any>>('/api/v1/project/create', {
-                        method: 'PUT',
-                        data: formData,
-                        requestType: 'form',
-                      }).then((res) => {
-                        console.log('res: ', res);
+                      await createProject(formData as any).then((res) => {
                         message.success('创建成功');
                       });
                       run();
@@ -195,6 +187,20 @@ const CardList = () => {
                       listType: 'picture-card',
                     }}
                   />
+                  <ProFormSelect
+                    name="owners"
+                    label="管理员"
+                    valueEnum={usersSelects}
+                    fieldProps={{ showSearch: true, mode: 'multiple' }}
+                    placeholder="Please select"
+                  />
+                  <ProFormSelect
+                    name="members"
+                    label="项目成员"
+                    valueEnum={usersSelects}
+                    fieldProps={{ showSearch: true, mode: 'multiple' }}
+                    placeholder="Please select"
+                  />
                 </ModalForm>
               </List.Item>
             );
@@ -215,12 +221,7 @@ const CardList = () => {
           formData.append('owners', (values.owners || []).join(','));
           formData.append('members', (values.members || []).join(','));
           try {
-            await request<Record<string, any>>(`/api/v1/project/${(editing as any).seq}`, {
-              method: 'PUT',
-              data: formData,
-              requestType: 'form',
-            }).then((res) => {
-              console.log('res: ', res);
+            await editProject((editing as any).seq, formData as any).then((res) => {
               message.success('修改成功');
             });
             run();

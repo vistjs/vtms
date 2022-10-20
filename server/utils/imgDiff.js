@@ -5,8 +5,6 @@ const pool = new Piscina({
   filename: path.resolve('./utils/imgDiffWorker.js'),
 });
 
-// console.log('create pool');
-
 module.exports = async function diffImages(
   references,
   imageDatas,

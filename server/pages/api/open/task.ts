@@ -5,7 +5,7 @@ import nextConnect from 'next-connect';
 import Project from '@/models/project';
 import Category from '@/models/category';
 import Task from '@/models/task';
-import { normalizeSuccess, normalizeError } from '@/utils';
+import { normalizeSuccess, normalizeError } from '@/utils/resHelper';
 import { runTask } from '@/utils/runPuppeteer';
 const diffImages = require('@/utils/imgDiff.js');
 import Cors from 'cors';

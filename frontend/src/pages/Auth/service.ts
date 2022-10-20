@@ -1,7 +1,4 @@
-// @ts-ignore
-/* eslint-disable */
 import { request } from '@umijs/max';
-import { CardListItemDataType } from '../../pages/Project/List/data';
 
 const API_PREFIX = '/api/v1';
 /** 获取当前的用户 GET /api/currentUser */
@@ -14,18 +11,17 @@ export async function currentUser(options?: { [key: string]: any }) {
   });
 }
 
-/** 退出登录接口 POST /api/login/outLogin */
+/** 退出登录接口 */
 export async function outLogin(options?: { [key: string]: any }) {
-  return request<Record<string, any>>('/api/v1/login/outLogin', {
+  return request<Record<string, any>>('/api/v1/account/logout', {
     method: 'POST',
     ...(options || {}),
   });
 }
 
-/** 登录接口 POST /api/login/account */
+/** 登录接口 */
 export async function login(body: Auth.LoginParams, options?: { [key: string]: any }) {
-  return request<Auth.LoginResult>('/api/v1/login/account', {
-    // return request<API.LoginResult>('/api/login/account', {
+  return request<Auth.LoginResult>('/api/v1/account/login', {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
@@ -90,25 +86,11 @@ export async function getRoles(
   },
   options?: { [key: string]: any },
 ) {
-  return request<Auth.Role>(`${API_PREFIX}/role/roles`, {
+  return request<Auth.Role>(`${API_PREFIX}/roles`, {
     method: 'GET',
     params: {
       ...params,
     },
     ...(options || {}),
-  });
-}
-
-export async function addRole(data: { [key: string]: any }) {
-  return request<Auth.Role>('/api/v1/role/create', {
-    method: 'POST',
-    data,
-  });
-}
-
-export async function updateRole(data: { [key: string]: any }) {
-  return request<Auth.Role>('/api/v1/role/create', {
-    method: 'POST',
-    data,
   });
 }

@@ -1,14 +1,28 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react';
-import { Form, Layout, message, Modal, Popconfirm } from 'antd';
+import {
+  Form,
+  Layout,
+  message,
+  Modal,
+  Popconfirm,
+  Descriptions,
+  Select,
+  Tooltip,
+  Space,
+} from 'antd';
 import {
   ActionType,
   ProColumns,
   ProFormSelect,
   ProFormTreeSelect,
+  ModalForm,
+  PageContainer,
+  ProFormText,
+  ProTable,
 } from '@ant-design/pro-components';
-import { ModalForm, PageContainer, ProFormText, ProTable } from '@ant-design/pro-components';
-import { FormattedMessage, useParams } from '@umijs/max';
+import { useRequest, FormattedMessage, useParams, Link } from '@umijs/max';
 import { getCases, getCategories, deleteCase, updateCase } from './service';
+import { getProjects } from '@/pages/Project/List/service';
 import { CaseListItem, caseStatus, caseStatusText, category } from './constants';
 import './index.less';
 import CaseSteps from './components/Steps';
@@ -18,12 +32,10 @@ const { Sider, Content } = Layout;
 
 const handleCaseUpdate = async (fields: any) => {
   const hide = message.loading('Updating');
-  console.log(fields);
   try {
-    await updateCase({
+    await updateCase(fields.id, {
       name: fields.name,
       status: fields.status,
-      id: fields.id,
       categoryId: fields.category.value,
     });
     hide();
@@ -53,20 +65,31 @@ const Cases: React.FC = () => {
   const query = useParams();
   const [updateModalVisible, handleUpdateModalVisible] = useState<boolean>(false);
   const [caseFormRef] = Form.useForm();
-  const selectCategoryId = useRef('');
+  const currentCategoryId = useRef('');
+  const [selectCategoryId, setSelectCategoryId] = useState('');
+  const currentProjectId = useRef(query.projectId);
   const [categoryData, setCategoryData] = useState<category>();
   const actionRef = useRef<ActionType>();
+
+  const { data: projects } = useRequest(getProjects);
+
+  const projectsSelects =
+    projects?.list?.map((item: any) => ({
+      label: <Link to={`/project/${item.seq}/cases`}>{item.name}</Link>,
+      value: item.seq,
+    })) || [];
 
   const columns: ProColumns<CaseListItem>[] = [
     {
       title: '名称',
+      key: 'name',
       dataIndex: 'name',
       render: (dom, entity) => {
         return (
           <a
             onClick={() => {
               Modal.info({
-                title: '用例信息',
+                title: '用例steps',
                 content: (
                   <div
                     style={{
@@ -88,6 +111,7 @@ const Cases: React.FC = () => {
     },
     {
       title: '执行次数',
+      key: 'runs',
       dataIndex: 'runs',
       search: false,
       hideInForm: true,
@@ -95,6 +119,7 @@ const Cases: React.FC = () => {
     },
     {
       title: <FormattedMessage id="pages.searchTable.titleStatus" defaultMessage="Status" />,
+      key: 'status',
       dataIndex: 'status',
       hideInForm: true,
       valueEnum: {
@@ -119,21 +144,22 @@ const Cases: React.FC = () => {
     {
       title: '上次执行时间',
       sorter: true,
+      key: 'lastRun',
       dataIndex: 'lastRun',
       search: false,
       valueType: 'dateTime',
-      render: (dom) => dom,
     },
     {
       title: '更新时间',
       sorter: true,
+      key: 'updateAt',
       dataIndex: 'updateAt',
       search: false,
       valueType: 'dateTime',
-      render: (dom) => dom,
     },
     {
       title: '更新人',
+      key: 'lastOperator',
       dataIndex: 'lastOperator',
       search: false,
       render: (user: any) => {
@@ -146,66 +172,102 @@ const Cases: React.FC = () => {
     },
     {
       title: <FormattedMessage id="pages.searchTable.titleOption" defaultMessage="Operating" />,
+      key: 'option',
       dataIndex: 'option',
       valueType: 'option',
-      render: (_, record) => [
-        <a
-          key="config"
-          onClick={() => {
-            caseFormRef.setFieldsValue({
-              id: record._id,
-              name: record.name,
-              status: record.status,
-              category: record.category,
-            });
-            handleUpdateModalVisible(true);
-          }}
-        >
-          <FormattedMessage id="pages.searchTable.config" defaultMessage="Configuration" />
-        </a>,
-        <Popconfirm
-          placement="top"
-          title="确定删除该用例吗?"
-          onConfirm={async () => {
-            const success = await handleCaseDelete(record);
-            if (success && actionRef.current) {
-              actionRef.current.reload();
-            }
-          }}
-          okText="是"
-          cancelText="否"
-        >
-          <a key="delete">删除</a>
-        </Popconfirm>,
-      ],
+      render: (_, record) => (
+        <Space>
+          <a
+            key="config"
+            onClick={() => {
+              caseFormRef.setFieldsValue({
+                id: record._id,
+                name: record.name,
+                status: record.status,
+                category: record.category,
+              });
+              handleUpdateModalVisible(true);
+            }}
+          >
+            <FormattedMessage id="pages.searchTable.config" defaultMessage="Configuration" />
+          </a>
+          <Popconfirm
+            placement="top"
+            title="确定删除该用例吗?"
+            onConfirm={async () => {
+              const success = await handleCaseDelete(record);
+              if (success && actionRef.current) {
+                actionRef.current.reload();
+              }
+            }}
+            okText="是"
+            cancelText="否"
+          >
+            <a key="delete">删除</a>
+          </Popconfirm>
+          <Link to={`/case/${record._id}/task`}>任务</Link>
+        </Space>
+      ),
     },
   ];
 
   const treeSelectHandle = useCallback(
     (selectedKeys, info) => {
-      if (info.node.key !== selectCategoryId.current) {
-        selectCategoryId.current = info.node.key || '';
+      if (info.node.key !== currentCategoryId.current) {
+        currentCategoryId.current = info.node.key || '';
         if (actionRef.current) {
           actionRef.current.reload();
         }
+        setSelectCategoryId(currentCategoryId.current);
       }
     },
-    [selectCategoryId],
+    [currentCategoryId],
   );
 
   const getCategoryTree = useCallback(() => {
     if (!query.projectId) return;
-    getCategories(query.projectId as string).then(({ data }) => {
-      setCategoryData(data);
-    });
+    getCategories(query.projectId as string)
+      .then(({ data }) => {
+        setCategoryData(data);
+      })
+      .catch((e) => {});
   }, [query.projectId]);
 
   useEffect(() => {
+    if (!Number(query.projectId)) {
+      return;
+    }
     getCategoryTree();
-  }, [getCategoryTree]);
+    if (actionRef.current && currentProjectId.current !== query.projectId) {
+      currentProjectId.current = query.projectId;
+      actionRef.current.reload();
+    }
+  }, [getCategoryTree, currentProjectId]);
 
   return (
-    <PageContainer>
+    <PageContainer
+      content={
+        <Descriptions column={3} style={{ marginBlockEnd: -16 }}>
+          <Descriptions.Item label="项目">
+            <Tooltip
+              placement="right"
+              title="请先选择项目"
+              color="red"
+              visible={!Number(query.projectId)}
+            >
+              <Select
+                showSearch
+                options={projectsSelects}
+                placeholder="Select a project"
+                value={Number(query.projectId)}
+              ></Select>
+            </Tooltip>
+          </Descriptions.Item>
+          <Descriptions.Item label="pid">{query.projectId}</Descriptions.Item>
+          <Descriptions.Item label="cid">{selectCategoryId}</Descriptions.Item>
+        </Descriptions>
+      }
+    >
       <Layout>
         <Sider
           width="240"
@@ -219,8 +281,10 @@ const Cases: React.FC = () => {
             boxShadow:
               '0 2px 4px 0 rgb(0 0 0 / 5%), 0 1px 2px 0 rgb(25 15 15 / 7%), 0 0 1px 0 rgb(0 0 0 / 8%)',
             overflow: 'hidden',
+            transform: 'rotateY(0deg)',
           }}
         >
+          <p style={{ textAlign: 'center', margin: '4px 0', fontWeight: 'bold' }}>目录</p>
           {categoryData && (
             <CategoryTree
               onSelect={treeSelectHandle}
@@ -238,15 +302,22 @@ const Cases: React.FC = () => {
               labelWidth: 120,
             }}
             request={async (params, option) => {
-              const res = await getCases(
-                Object.assign({
-                  projectId: query.projectId,
-                  categoryId: selectCategoryId.current,
-                  ...params,
-                }),
-                option,
-              );
-              return { data: res?.data?.list, total: res?.data?.total, success: true };
+              try {
+                if (!Number(query.projectId)) {
+                  return { success: false };
+                }
+                const res = await getCases(
+                  Object.assign({
+                    projectId: query.projectId,
+                    categoryId: currentCategoryId.current,
+                    ...params,
+                  }),
+                  option,
+                );
+                return { data: res?.data?.list, total: res?.data?.total, success: true };
+              } catch (error: any) {
+                return { success: false };
+              }
             }}
             columns={columns}
           />

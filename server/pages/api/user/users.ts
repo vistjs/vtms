@@ -1,14 +1,17 @@
 import type { NextApiRequest, NextApiResponse } from 'next';
 import nextConnect from 'next-connect';
-
 import type { NextApiRequestWithContext } from '@/types/index';
-
 import conn from '@/utils/mongoose';
 import UserModel, { IUser, ResponseUser } from '@/models/user';
 import RoleModel, { IRole } from '@/models/role';
 import auth from '@/middleware/auth';
-import { handlePagination, generateQueryFilter } from '@/utils/index';
-import { normalizeSuccess, normalizeError, addRoleNameToUser } from '@/utils';
+import { addRoleNameToUser } from '@/utils/dbHelper';
+import {
+  normalizeSuccess,
+  normalizeError,
+  handlePagination,
+  generateQueryFilter,
+} from '@/utils/resHelper';
 
 const handler = nextConnect();
 
@@ -19,9 +22,15 @@ handler.get(async (req: NextApiRequestWithContext, res: NextApiResponse) => {
     const {
       query: { current, pageSize },
     } = req;
+    await conn();
+    if (typeof current === 'undefined' || typeof pageSize === 'undefined') {
+      const users = await UserModel.find({}).lean();
+      const total = users?.length;
+      normalizeSuccess(res, { list: users, total });
+      return;
+    }
     const { offset = 0, limit = 10 } = handlePagination(current, pageSize);
     const filter = generateQueryFilter(req?.query);
-    await conn();
     const [rawUsers, allRoles] = await Promise.all([
       UserModel.find(filter).skip(offset).limit(limit).lean(),
       RoleModel.find().lean(),

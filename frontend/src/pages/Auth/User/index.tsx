@@ -8,7 +8,7 @@ import {
   ProTable,
   ProFormCheckbox,
 } from '@ant-design/pro-components';
-import { FormattedMessage, useIntl, useModel } from '@umijs/max';
+import { FormattedMessage, useModel } from '@umijs/max';
 import { Button, message, Modal, Form } from 'antd';
 import React, { useRef, useState } from 'react';
 
@@ -35,14 +35,12 @@ const User: React.FC = () => {
   const [updateModalVisible, setUpdateModalVisible] = useState<boolean>(false);
 
   const actionRef = useRef<ActionType>();
-  const { initialState, setInitialState } = useModel('@@initialState');
+  const { initialState } = useModel('@@initialState');
 
-  console.log('initialState in use list:', initialState);
   /**
    * @en-US International configuration
    * @zh-CN 国际化配置
    * */
-  const intl = useIntl();
   const [form] = Form.useForm();
 
   const handleAdd = async (fields: Auth.AddUser) => {
@@ -61,7 +59,6 @@ const User: React.FC = () => {
 
   const handleUpdate = async (fields: Auth.AddUser) => {
     const hide = message.loading('正在更新');
-    console.log('fields:', fields);
     const { username, isAdmin, password } = fields;
     try {
       await updateUser({ username, isAdmin, password: password.trim() });
@@ -113,12 +110,17 @@ const User: React.FC = () => {
               okType: 'danger',
               cancelText: 'No',
               async onOk() {
-                const success = await deleteUser({ username: record.username });
-                if (success) {
-                  setCreateModalVisible(false);
-                  if (actionRef.current) {
-                    actionRef.current.reload();
+                try {
+                  const success = await deleteUser({ username: record.username });
+                  if (success) {
+                    setCreateModalVisible(false);
+                    if (actionRef.current) {
+                      actionRef.current.reload();
+                    }
                   }
+                  return true;
+                } catch (error) {
+                  return false;
                 }
               },
               onCancel() {

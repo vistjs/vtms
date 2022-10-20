@@ -3,7 +3,7 @@ import HttpStatus from 'http-status-codes';
 
 import { createLoginSession, getLoginSession } from './auth';
 import { ErrorCode } from '@/constant';
-import { normalizeSuccess, normalizeError } from '@/utils';
+import { normalizeSuccess, normalizeError } from '@/utils/resHelper';
 
 function parseCookies(req) {
   // For API Routes we don't need to parse the cookies.

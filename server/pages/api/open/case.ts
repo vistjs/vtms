@@ -4,7 +4,7 @@ import Case, { CaseStatus } from '@/models/case';
 import moment from 'moment';
 import nextConnect from 'next-connect';
 import Project from '@/models/project';
-import { normalizeSuccess, normalizeError, handlePagination } from '@/utils';
+import { normalizeSuccess, normalizeError } from '@/utils/resHelper';
 import Cors from 'cors';
 
 // Initializing the cors middleware

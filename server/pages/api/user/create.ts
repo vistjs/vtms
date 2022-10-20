@@ -1,13 +1,11 @@
 import type { NextApiRequest, NextApiResponse } from 'next';
-import HttpStatus from 'http-status-codes';
 import nextConnect from 'next-connect';
-
 import conn from '@/utils/mongoose';
 import UserModel from '@/models/user';
 import { createUser } from '@/middleware/auth_utils/auth';
 import userIsAdminAuth from '@/middleware/user';
 import auth from '@/middleware/auth';
-import { normalizeSuccess, normalizeError } from '@/utils';
+import { normalizeSuccess, normalizeError } from '@/utils/resHelper';
 
 const handler = nextConnect();
 

@@ -1,10 +1,9 @@
 import passport from 'passport';
 import LocalStrategy from 'passport-local';
-
 import conn from '@/utils/mongoose';
 import UserModel from '@/models/user';
 import RoleModel, { IRole } from '@/models/role';
-import { addRoleNameToUser } from '@/utils';
+import { addRoleNameToUser } from '@/utils/dbHelper';
 
 import { validatePassword } from './auth';
 

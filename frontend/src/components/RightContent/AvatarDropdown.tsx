@@ -1,13 +1,13 @@
-import { outLogin } from '@/pages/Auth/service';
+import { logout } from '@/pages/Login/service';
 import { LogoutOutlined, SettingOutlined, UserOutlined } from '@ant-design/icons';
 import { history, useModel } from '@umijs/max';
 import { Avatar, Menu, Spin } from 'antd';
 import type { ItemType } from 'antd/lib/menu/hooks/useItems';
-import { stringify } from 'querystring';
 import type { MenuInfo } from 'rc-menu/lib/interface';
 import React, { useCallback } from 'react';
 import HeaderDropdown from '../HeaderDropdown';
 import styles from './index.less';
+import { goLogin } from '@/utils';
 
 export type GlobalHeaderRightProps = {
   menu?: boolean;
@@ -17,21 +17,8 @@ export type GlobalHeaderRightProps = {
  * 退出登录，并且将当前的 url 保存
  */
 const loginOut = async () => {
-  await outLogin();
-  const { search, pathname } = history.location;
-  const urlParams = new URL(window.location.href).searchParams;
-  /** 此方法会跳转到 redirect 参数所在的位置 */
-  const redirect = urlParams.get('redirect');
-  // Note: There may be security issues, please note
-
-  if (window.location.pathname !== '/auth/login' && !redirect) {
-    history.replace({
-      pathname: '/auth/login',
-      search: stringify({
-        redirect: pathname + search,
-      }),
-    });
-  }
+  await logout();
+  goLogin();
 };
 
 const AvatarDropdown: React.FC<GlobalHeaderRightProps> = ({ menu }) => {

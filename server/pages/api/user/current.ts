@@ -1,15 +1,9 @@
 import type { NextApiRequest, NextApiResponse } from 'next';
-import HttpStatus from 'http-status-codes';
 import nextConnect from 'next-connect';
-
 import type { NextApiRequestWithContext } from '@/types/index';
-
 import conn from '@/utils/mongoose';
-import UserModel, { IUser, DocumentIUser, ResponseUser } from '@/models/user';
-import RoleModel, { IRole } from '@/models/role';
 import auth from '@/middleware/auth';
-import { handlePagination, generateQueryFilter } from '@/utils/index';
-import { normalizeSuccess, normalizeError, addRoleNameToUser } from '@/utils';
+import { normalizeSuccess, normalizeError } from '@/utils/resHelper';
 
 const handler = nextConnect();
 

@@ -3,9 +3,8 @@ import conn from '@/utils/mongoose';
 import UserModel from '@/models/user';
 import auth from '@/middleware/auth';
 import userIsAdminAuth from '@/middleware/user';
-
 import nextConnect from 'next-connect';
-import { normalizeSuccess, normalizeError } from '@/utils';
+import { normalizeSuccess, normalizeError } from '@/utils/resHelper';
 
 const handler = nextConnect();
 

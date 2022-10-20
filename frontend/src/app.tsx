@@ -1,18 +1,15 @@
-import React, { useRef, useState } from 'react';
 import { message, notification } from 'antd';
 import Footer from './components/Footer';
 import RightContent from './components/RightContent';
-import { LinkOutlined } from '@ant-design/icons';
 import type { Settings as LayoutSettings } from '@ant-design/pro-components';
 import { SettingDrawer } from '@ant-design/pro-components';
 import type { RunTimeLayoutConfig, RequestConfig } from '@umijs/max';
-import { history, Link } from '@umijs/max';
+import { history } from '@umijs/max';
 import defaultSettings from '../config/defaultSettings';
 import { currentUser as queryCurrentUser } from '@/pages/Auth/service';
-import { ErrorCode } from '@/constant';
-
+import { loginPath, ErrorCode } from '@/constants';
+import { goLogin } from '@/utils';
 const isDev = process.env.NODE_ENV === 'development';
-const loginPath = '/auth/login';
 
 /**
  * @see  https://umijs.org/zh-CN/plugins/plugin-initial-state
@@ -27,15 +24,12 @@ export async function getInitialState(): Promise<{
     try {
       const msg = await queryCurrentUser();
       return msg.data;
-    } catch (error) {
-      console.log('fetchUserInfo error', error);
-      history.push(loginPath);
-    }
+    } catch (error) {} // 未登陆
     return undefined;
   };
   // 如果不是登录页面，执行
-  if (history.location.pathname !== loginPath) {
-    const { user } = await fetchUserInfo();
+  if (window.location.pathname !== loginPath) {
+    const { user } = (await fetchUserInfo()) || ({} as any);
     return {
       fetchUserInfo,
       currentUser: user,
@@ -48,6 +42,8 @@ export async function getInitialState(): Promise<{
   };
 }
 
+const casesPathReg = /\/project\/([\w\:]+)\/cases/;
+
 // ProLayout 支持的api https://procomponents.ant.design/components/layout
 export const layout: RunTimeLayoutConfig = ({ initialState, setInitialState }) => {
   return {
@@ -56,12 +52,21 @@ export const layout: RunTimeLayoutConfig = ({ initialState, setInitialState }) =
     waterMarkProps: {
       content: initialState?.currentUser?.name,
     },
+    contentStyle: { padding: 0 },
     footerRender: () => <Footer />,
     onPageChange: () => {
-      const { location } = history;
       // 如果没有登录，重定向到 login
-      if (!initialState?.currentUser && location.pathname !== loginPath) {
-        history.push(loginPath);
+      if (!initialState?.currentUser && window.location.pathname !== loginPath) {
+        goLogin();
+      }
+      // 用例管理调到具体的项目
+      if (window.location.pathname.match(casesPathReg)) {
+        const projectIdStored = localStorage.getItem('tc-projectId');
+        if (RegExp.$1 === ':projectId' && projectIdStored) {
+          history.push(`/project/${projectIdStored}/cases`);
+        } else {
+          localStorage.setItem('tc-projectId', RegExp.$1);
+        }
       }
     },
     links: isDev
@@ -81,7 +86,7 @@ export const layout: RunTimeLayoutConfig = ({ initialState, setInitialState }) =
       return (
         <>
           {children}
-          {!props.location?.pathname?.includes('/login') && (
+          {window.location?.pathname !== loginPath && (
             <SettingDrawer
               disableUrlParams
               enableDarkTheme
@@ -142,7 +147,7 @@ export const request: RequestConfig = {
           const { errorMessage, code } = errorInfo;
           if (code === ErrorCode.NO_PERMISSION) {
             errorMessage && message.error(errorMessage);
-            history.push('/');
+            goLogin();
             return;
           }
           switch (errorInfo.showType) {
