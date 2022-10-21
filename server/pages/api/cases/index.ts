@@ -13,7 +13,7 @@ import {
   normalizeSuccess,
   normalizeError,
 } from '@/utils/resHelper';
-import { projectRoleHandle } from '@/utils/dbHelper';
+import { projectRoleHandle } from '@/utils/common';
 
 const handler = nextConnect();
 
@@ -27,7 +27,7 @@ handler.get(async (req: NextApiRequestWithContext, res: NextApiResponse) => {
         pageSize,
         name,
         status,
-        updateAt,
+        updatedAt,
         projectId,
         categoryId,
       },
@@ -97,13 +97,13 @@ handler.get(async (req: NextApiRequestWithContext, res: NextApiResponse) => {
         });
       }
     }
-    if (updateAt && typeof updateAt === 'string' && updateAt == SORTER_ASC) {
+    if (updatedAt && typeof updatedAt === 'string' && updatedAt == SORTER_ASC) {
       casesQuery.sort({
-        updateAt: 'asc',
+        updatedAt: 'asc',
       });
     } else {
       casesQuery.sort({
-        updateAt: 'desc',
+        updatedAt: 'desc',
       });
     }
 
@@ -117,67 +117,6 @@ handler.get(async (req: NextApiRequestWithContext, res: NextApiResponse) => {
     ]);
 
     normalizeSuccess(res, { list: cases, total });
-  } catch (err: any) {
-    console.log(err);
-    normalizeError(res, err.message, err.code);
-  }
-});
-
-handler.put(async (req: NextApiRequestWithContext, res: NextApiResponse) => {
-  try {
-    const {
-      body: { name, status, id, categoryId },
-    } = req;
-
-    await conn();
-    if (!id) {
-      throw new Error('id is required');
-    }
-
-    const caseInstance = await Case.findOne({
-      _id: id,
-    });
-    if (!caseInstance) {
-      throw new Error('case does not exist');
-    }
-    projectRoleHandle(req.user, caseInstance.project.toString());
-
-    await caseInstance.update({
-      name,
-      status,
-      category: categoryId,
-      lastOperator: req.user?._id,
-    });
-
-    normalizeSuccess(res, { id });
-  } catch (err: any) {
-    console.log(err);
-    normalizeError(res, err.message, err.code);
-  }
-});
-
-handler.delete(async (req: NextApiRequestWithContext, res: NextApiResponse) => {
-  try {
-    const {
-      body: { id },
-    } = req;
-    if (!id) {
-      throw new Error('id is required');
-    }
-    await conn();
-
-    const caseInstance = await Case.findOne({
-      _id: id,
-    });
-    if (!caseInstance) {
-      throw new Error('case does not exist');
-    }
-    projectRoleHandle(req.user, caseInstance.project.toString());
-
-    await caseInstance.update({
-      status: CaseStatus.DELETE,
-    });
-    normalizeSuccess(res, { id });
   } catch (err: any) {
     console.log(err);
     normalizeError(res, err.message, err.code);

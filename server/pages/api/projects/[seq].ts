@@ -2,7 +2,7 @@ import type { NextApiResponse } from 'next';
 import conn from '@/utils/mongoose';
 import Project from '@/models/project';
 import { PROJECT_STATUS, ROLE_TYPE } from '@/constant';
-import { newProjectSeq } from '@/utils/dbHelper';
+import { newProjectSeq } from '@/utils/common';
 import { HydratedDocument, Schema } from 'mongoose';
 import nextConnect from 'next-connect';
 import Category from '@/models/category';
@@ -22,16 +22,17 @@ handler.use(auth);
 handler.put(async (req: NextApiRequestWithContext, res: NextApiResponse) => {
   try {
     const {
-      query: { id },
-      body: { name, desc, logo, owners, members },
+      query: { seq },
+      body: { name, desc, logo, owners, members, token },
     } = req;
     await conn();
     // let doc: HydratedDocument<IProject>;
     let doc;
-    if (id === 'create') {
+    if (seq === 'create') {
       const seqId = await newProjectSeq();
       doc = await Project.create({
         name,
+        token,
         logo,
         desc,
         seq: seqId,
@@ -72,8 +73,8 @@ handler.put(async (req: NextApiRequestWithContext, res: NextApiResponse) => {
       }
 
       doc = await Project.findOneAndUpdate(
-        { seq: Number(id) },
-        { name, logo, desc },
+        { seq: Number(seq) },
+        { name, logo, desc, token },
       );
       await Role.findOneAndUpdate(
         { _id: doc.ownerRole },
@@ -95,11 +96,11 @@ handler.put(async (req: NextApiRequestWithContext, res: NextApiResponse) => {
 handler.delete(async (req: NextApiRequestWithContext, res: NextApiResponse) => {
   try {
     const {
-      query: { id },
+      query: { seq },
     } = req;
     await conn();
     const doc = await Project.findOne({
-      seq: Number(id),
+      seq: Number(seq),
     });
     const caseCount = await Case.find({
       project: doc._id,

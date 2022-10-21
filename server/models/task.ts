@@ -1,26 +1,28 @@
 import { Schema, models, model } from 'mongoose';
 
 interface Result {
-  name: string;
+  branch: string;
   screenshots: {
     test: string;
     diff?: string;
     passed?: boolean;
   }[];
   total: number;
-  passed?: number;
-  failed?: number;
-  createAt: Date;
-  updateAt: Date;
+  passed: number;
+  failed: number;
+  createdAt: Date;
+  updatedAt: Date;
 }
 
 interface Task {
   case: Schema.Types.ObjectId;
+  width: number;
+  height: number;
   results: {
-    [name: string]: Result;
+    [branch: string]: Result;
   };
-  createAt?: Date;
-  updateAt?: Date;
+  createdAt?: Date;
+  updatedAt?: Date;
 }
 
 const TaskSchema = new Schema<Task>(
@@ -29,6 +31,8 @@ const TaskSchema = new Schema<Task>(
       type: Schema.Types.ObjectId,
       ref: 'Case',
     },
+    width: { type: Number, required: true },
+    height: { type: Number, required: true },
     results: Schema.Types.Mixed,
   },
   { timestamps: true },

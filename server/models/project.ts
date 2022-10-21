@@ -4,20 +4,22 @@ import { PROJECT_STATUS } from '../constant';
 export interface IProject {
   name: string;
   seq: number;
+  token?: string;
   desc?: string;
   logo?: string;
   status?: number;
   category: Schema.Types.ObjectId;
   ownerRole: Schema.Types.ObjectId;
   memberRole: Schema.Types.ObjectId;
-  createAt?: Date;
-  updateAt?: Date;
+  createdAt?: Date;
+  updatedAt?: Date;
 }
 
 const projectSchema = new Schema<IProject>(
   {
     name: { type: String, required: true, unique: true },
     seq: { type: Number, required: true },
+    token: { type: String, maxLength: 20 },
     desc: { type: String, maxLength: 200 },
     logo: String,
     category: {

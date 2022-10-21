@@ -9,8 +9,8 @@ export interface IRole {
   project?: Types.ObjectId;
   users?: Types.ObjectId[];
   desc?: string;
-  createAt?: Date;
-  updateAt?: Date;
+  createdAt?: Date;
+  updatedAt?: Date;
 }
 
 const roleSchema = new Schema<IRole>(

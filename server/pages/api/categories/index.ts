@@ -6,7 +6,7 @@ import Project from '@/models/project';
 import { handleTree } from '@/utils/category';
 import auth from '@/middleware/auth';
 import { normalizeSuccess, normalizeError } from '@/utils/resHelper';
-import { projectRoleHandle } from '@/utils/dbHelper';
+import { projectRoleHandle } from '@/utils/common';
 import { NextApiRequestWithContext } from '@/types';
 
 const handler = nextConnect();

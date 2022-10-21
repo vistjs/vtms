@@ -6,7 +6,10 @@ import Project from '@/models/project';
 import Category from '@/models/category';
 import Task from '@/models/task';
 import { normalizeSuccess, normalizeError } from '@/utils/resHelper';
+import { replacePlaceholder } from '@/utils/common';
 import { runTask } from '@/utils/runPuppeteer';
+import * as curlconverter from 'curlconverter';
+const curl = require('@/utils/curl.js');
 const diffImages = require('@/utils/imgDiff.js');
 import Cors from 'cors';
 
@@ -48,14 +51,17 @@ interface RunResult {
 handler.get(async (req: NextApiRequest, res: NextApiResponse) => {
   try {
     const {
-      query: { pid, cid, commit },
+      query: { pid, cid, commit, token },
     } = req;
 
     await conn();
+    if (!token) {
+      throw new Error('parameter error, need token');
+    }
     if (!commit) {
       throw new Error('parameter error, need commit');
-    } else if (commit === 'baseline') {
-      throw new Error('parameter error, commit can not be baseline');
+    } else if (commit === 'master') {
+      throw new Error('parameter error, commit can not be master');
     }
     let caseInstances;
     if (pid) {
@@ -64,13 +70,15 @@ handler.get(async (req: NextApiRequest, res: NextApiResponse) => {
       });
       if (!project) {
         throw new Error('project do not exist');
+      } else if (token !== project.token) {
+        throw new Error('parameter error, token error');
       }
       caseInstances = await Case.find({
         project: project._id,
         status: {
           $in: [CaseStatus.ACTIVE, CaseStatus.RUNNING, CaseStatus.ERROR],
         },
-      }).lean();
+      });
     } else if (cid) {
       const category = await Category.findOne({
         _id: cid,
@@ -83,7 +91,7 @@ handler.get(async (req: NextApiRequest, res: NextApiResponse) => {
         status: {
           $in: [CaseStatus.ACTIVE, CaseStatus.RUNNING, CaseStatus.ERROR],
         },
-      }).lean();
+      });
     } else {
       throw new Error('parameter validation failed');
     }
@@ -93,9 +101,11 @@ handler.get(async (req: NextApiRequest, res: NextApiResponse) => {
     const promises = caseInstances.map(async (ins) => {
       let total = 0;
       const {
+        name: caseName,
         steps,
         mocks,
         webInfo: { url, width, height },
+        noticeHook,
       } = ins;
       try {
         const imageDatas = await runTask(steps, mocks, url, width, height);
@@ -104,13 +114,17 @@ handler.get(async (req: NextApiRequest, res: NextApiResponse) => {
         if (!task) {
           task = new Task({
             case: ins._id,
+            width,
+            height,
             results: {
-              baseline: {
-                name: commit,
+              master: {
+                branch: commit,
                 screenshots: imageDatas.map((data) => ({ test: data })),
                 total,
-                createAt: new Date(),
-                updateAt: new Date(),
+                passed: total,
+                failed: 0,
+                createdAt: new Date(),
+                updatedAt: new Date(),
               },
             },
           });
@@ -121,7 +135,7 @@ handler.get(async (req: NextApiRequest, res: NextApiResponse) => {
             total,
           };
         }
-        const references = task.results.baseline.screenshots.map(
+        const references = task.results.master.screenshots.map(
           ({ test }: any) => test,
         );
         if (references.length !== imageDatas.length) {
@@ -129,7 +143,7 @@ handler.get(async (req: NextApiRequest, res: NextApiResponse) => {
             caseId: ins._id,
             isError: true,
             errorMsg:
-              'the quantity of screenshots is different from that of baseline',
+              'the quantity of screenshots is different from that of master',
             total,
           };
         }
@@ -141,28 +155,60 @@ handler.get(async (req: NextApiRequest, res: NextApiResponse) => {
         );
 
         task.set(`results.${commit}`, {
-          name: commit,
+          branch: commit,
           screenshots: imageDatas.map((data, index) => ({
             test: data,
-            diff: diffs[index],
-            passed: !diffs[index],
+            diff: diffs[index] || undefined,
+            passed: !diffs[index] || undefined,
           })),
           total,
           failed,
-          success: total - failed,
-          createAt: task.results[commit as string]?.createAt || new Date(),
-          updateAt: new Date(),
+          passed: total - failed,
+          createdAt: task.results[commit as string]?.createdAt || new Date(),
+          updatedAt: new Date(),
         });
         await task.save();
 
+        ins.runs += 1;
+        ins.lastRun = new Date();
+        await ins.save();
+        if (noticeHook) {
+          try {
+            curl(
+              curlconverter.toBrowser(
+                replacePlaceholder(noticeHook, {
+                  case: caseName,
+                  isError: false,
+                  total,
+                  failed,
+                  passed: total - failed,
+                }),
+              ),
+            );
+          } catch (e: any) {}
+        }
         return {
           caseId: ins._id,
           isError: false,
           total,
           failed,
-          success: total - failed,
+          passed: total - failed,
         };
       } catch (err: any) {
+        if (noticeHook) {
+          try {
+            curl(
+              curlconverter.toBrowser(
+                replacePlaceholder(noticeHook, {
+                  case: caseName,
+                  isError: true,
+                  errorMsg: err.message,
+                  total,
+                }),
+              ),
+            );
+          } catch (e: any) {}
+        }
         return {
           caseId: ins._id,
           isError: true,
@@ -172,7 +218,6 @@ handler.get(async (req: NextApiRequest, res: NextApiResponse) => {
       }
     });
 
-    // 按次序输出
     for (const promise of promises) {
       results.push(await promise);
     }

@@ -14,8 +14,8 @@ export interface IUser {
   salt: string;
   isAdmin: boolean;
   roles?: IRole[];
-  createAt?: Date;
-  updateAt?: Date;
+  createdAt?: Date;
+  updatedAt?: Date;
 }
 
 export type DocumentIUser = HydratedDocument<IUser>;

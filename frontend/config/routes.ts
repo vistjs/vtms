@@ -60,7 +60,7 @@
         component: './Case/Task',
       },
       {
-        path: '/case/:caseId/report',
+        path: '/case/:caseId/report/:branch',
         name: 'report',
         component: './Case/Report',
         menuRender: false,

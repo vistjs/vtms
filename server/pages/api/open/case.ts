@@ -40,9 +40,21 @@ handler.post(async (req: NextApiRequest, res: NextApiResponse) => {
       'YYYY-MM-DD_HH:mm:ss',
     )} ${getRamdomStr()}`;
     const {
-      body: { name = defaultName, steps, mocks, url, width, height, pid },
+      body: {
+        name = defaultName,
+        steps,
+        mocks,
+        url,
+        width,
+        height,
+        pid,
+        token,
+      },
     } = req;
 
+    if (!token) {
+      throw new Error('parameter error, need token');
+    }
     if (!steps || !pid || !width || !height) {
       throw new Error('parameter validation failed');
     }
@@ -53,6 +65,8 @@ handler.post(async (req: NextApiRequest, res: NextApiResponse) => {
     });
     if (!project) {
       throw new Error('project does not exist');
+    } else if (token !== project.token) {
+      throw new Error('parameter error, token error');
     }
     const caseInstance = await Case.create({
       name,

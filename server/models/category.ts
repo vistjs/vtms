@@ -4,8 +4,8 @@ interface Category {
   title: string;
   parent?: Schema.Types.ObjectId;
   project: Schema.Types.ObjectId;
-  createAt?: Date;
-  updateAt?: Date;
+  createdAt?: Date;
+  updatedAt?: Date;
 }
 
 const CategorySchema = new Schema<Category>(

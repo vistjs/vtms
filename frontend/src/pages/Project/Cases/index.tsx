@@ -15,6 +15,7 @@ import {
   ProColumns,
   ProFormSelect,
   ProFormTreeSelect,
+  ProFormTextArea,
   ModalForm,
   PageContainer,
   ProFormText,
@@ -36,7 +37,8 @@ const handleCaseUpdate = async (fields: any) => {
     await updateCase(fields.id, {
       name: fields.name,
       status: fields.status,
-      categoryId: fields.category.value,
+      categoryId: fields.category,
+      noticeHook: fields.noticeHook,
     });
     hide();
 
@@ -152,8 +154,8 @@ const Cases: React.FC = () => {
     {
       title: '更新时间',
       sorter: true,
-      key: 'updateAt',
-      dataIndex: 'updateAt',
+      key: 'updatedAt',
+      dataIndex: 'updatedAt',
       search: false,
       valueType: 'dateTime',
     },
@@ -185,6 +187,7 @@ const Cases: React.FC = () => {
                 name: record.name,
                 status: record.status,
                 category: record.category,
+                noticeHook: record.noticeHook,
               });
               handleUpdateModalVisible(true);
             }}
@@ -373,7 +376,7 @@ const Cases: React.FC = () => {
           secondary
           request={async () => {
             type selectNode = {
-              value: string;
+              value: string | number;
               label: string;
               children?: selectNode[];
             };
@@ -397,11 +400,16 @@ const Cases: React.FC = () => {
             filterTreeNode: true,
             showSearch: true,
             dropdownMatchSelectWidth: false,
-            labelInValue: true,
             autoClearSearchValue: true,
             multiple: false,
             treeNodeFilterProp: 'label',
           }}
+        />
+        <ProFormTextArea
+          name="noticeHook"
+          label="通知hook"
+          placeholder="请输入curl"
+          extra="请输入正确的curl格式，可先用postman验证， 可用的占位符{case}、{isError}、{errorMsg}、{total}、{failed}、{passed}"
         />
       </ModalForm>
     </PageContainer>

@@ -1,100 +1,25 @@
-import { useState } from 'react';
-import { PlusOutlined } from '@ant-design/icons';
-import { useRequest, request, Link, useAccess, Access } from '@umijs/max';
+import { useParams, useRequest, Link } from '@umijs/max';
 import type { ProColumns } from '@ant-design/pro-components';
-import {
-  ModalForm,
-  ProFormText,
-  ProFormTextArea,
-  ProFormUploadButton,
-  PageContainer,
-  ProFormSelect,
-  ProCard,
-  ProTable,
-} from '@ant-design/pro-components';
-import { Typography, message, Avatar, Badge, Statistic } from 'antd';
-import type { CardListItemDataType } from './data';
+import { PageContainer, ProCard, ProTable } from '@ant-design/pro-components';
+import { Badge, Statistic, Popconfirm, Space } from 'antd';
+import { CaseTask, Result } from './types';
+import { getTasks, coverMaster } from './service';
 
 const { Divider } = ProCard;
 
-const { Paragraph } = Typography;
-
-export type Task = {
-  name: string;
-  total: number;
-  passed: number;
-  failed: number;
-};
-
 const TaskPage = () => {
-  const access = useAccess();
+  const query = useParams();
 
-  const { data, run, loading } = useRequest(() => {
-    return request<Record<string, any>>('/api/v1/projects');
+  const { data: caseTask, run: refresh } = useRequest<{ data: CaseTask }>(() => {
+    return getTasks(query.caseId);
   });
-
-  const { data: users } = useRequest(() => {
-    return request<Record<string, any>>('/api/v1/user/all');
-  });
-
-  const usersSelects = Object.fromEntries(
-    users?.list?.map((item: any) => [item._id, item.username]) || [],
-  );
-
-  const [updateVisible, setUpdateVisible] = useState(false);
-  const [editing, setEditing] = useState({});
-
-  const list = (data?.list || []).map((item: any) => {
-    return {
-      ...item,
-      owners: item?.ownerRole?.users,
-      members: item?.memberRole?.users,
-    };
-  });
-
-  const changeUpdate = (index: number) => {
-    setEditing(list[index - 1]);
-    setUpdateVisible(true);
-  };
-
-  const deleteItem = (seq: number) => {
-    return request<Record<string, any>>(`/api/v1/project/${seq}`, {
-      method: 'DELETE',
-    }).then((res) => {
-      message.success('删除成功');
-      run();
-    });
-  };
 
   const content = null;
 
-  const nullData: Partial<CardListItemDataType> = {};
-
-  const tableListDataSource: Task[] = [
+  const columns: ProColumns<Result>[] = [
     {
-      name: '12ccs',
-      total: 13,
-      passed: 5,
-      failed: 8,
-    },
-    {
-      name: '345555',
-      total: 13,
-      passed: 5,
-      failed: 8,
-    },
-    {
-      name: 'rrr111',
-      total: 13,
-      passed: 5,
-      failed: 8,
-    },
-  ];
-
-  const columns: ProColumns<Task>[] = [
-    {
-      dataIndex: 'name',
-      title: '名称',
+      dataIndex: 'branch',
+      title: '分支',
       width: 150,
     },
     {
@@ -116,43 +41,67 @@ const TaskPage = () => {
       },
     },
     {
+      dataIndex: 'createdAt',
+      title: '创建时间',
+    },
+    {
+      dataIndex: 'updatedAt',
+      title: '更新时间',
+    },
+    {
       title: '操作',
       dataIndex: 'x',
       valueType: 'option',
       render: (_, record) => {
-        return [<a key="edit">详情</a>, <a key="edit">approve</a>];
+        return (
+          <Space>
+            <Link to={`/case/${query.caseId}/report/${record.branch}`}>详情</Link>
+            {record.branch !== 'master' && (
+              <Popconfirm
+                placement="top"
+                title="确定覆盖master吗? 会导致基线截图变成此分支!"
+                onConfirm={async () => {
+                  try {
+                    await coverMaster(query.caseId, record.branch);
+                    refresh();
+                    return true;
+                  } catch (e: any) {
+                    return false;
+                  }
+                }}
+                okText="是"
+                cancelText="否"
+              >
+                <a key="cover">覆盖master</a>
+              </Popconfirm>
+            )}
+          </Space>
+        );
       },
     },
   ];
 
   return (
-    <PageContainer content={content}>
+    <PageContainer header={{ onBack: () => window.history.back() }} content={content}>
       <div>
-        <ProCard.Group title="测试用例1" direction="row">
+        <ProCard.Group title={caseTask?.case} direction="row">
           <ProCard style={{ borderRadius: 0, boxShadow: 'unset' }}>
-            <Statistic title="全部" value={10} />
+            <Statistic title="全部" value={caseTask?.total} />
           </ProCard>
           <Divider type="vertical" />
           <ProCard style={{ borderRadius: 0, boxShadow: 'unset' }}>
-            <Statistic title="passed" value={8} valueStyle={{ color: '#3f8600' }} />
+            <Statistic title="passed" value={caseTask?.passed} valueStyle={{ color: '#3f8600' }} />
           </ProCard>
           <Divider type="vertical" />
           <ProCard style={{ borderRadius: 0, boxShadow: 'unset' }}>
-            <Statistic title="failed" value={2} valueStyle={{ color: '#cf1322' }} />
+            <Statistic title="failed" value={caseTask?.failed} valueStyle={{ color: '#cf1322' }} />
           </ProCard>
         </ProCard.Group>
       </div>
-      <ProTable<Task>
+      <ProTable<Result>
         columns={columns}
-        request={(params, sorter, filter) => {
-          // 表单搜索项会从 params 传入，传递给后端接口。
-          console.log(params, sorter, filter);
-          return Promise.resolve({
-            data: tableListDataSource,
-            success: true,
-          });
-        }}
-        rowKey="name"
+        dataSource={caseTask?.results}
+        rowKey="branch"
         pagination={{
           showQuickJumper: true,
         }}

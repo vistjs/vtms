@@ -1,6 +1,6 @@
-import { useState } from 'react';
+import { useState, useRef } from 'react';
 import { PlusOutlined } from '@ant-design/icons';
-import { Button, Card, List, Typography } from 'antd';
+import { Button, Card, List, Typography, Row, Col, message, Avatar, Image, Input } from 'antd';
 import { useRequest, Link, useAccess, Access } from '@umijs/max';
 import {
   ModalForm,
@@ -9,17 +9,20 @@ import {
   ProFormUploadButton,
   PageContainer,
   ProFormSelect,
+  ProForm,
+  ProFormInstance,
 } from '@ant-design/pro-components';
-import { message, Avatar, Image } from 'antd';
 import { getProjects, getUsers, createProject, editProject, deleteProject } from './service';
 import type { CardListItemDataType } from './types';
+import { uuid2 } from '@/utils';
 import styles from './style.less';
 
 const { Paragraph } = Typography;
 
 const CardList = () => {
   const access = useAccess();
-
+  const createFormRef = useRef<ProFormInstance>();
+  const updateFormRef = useRef<ProFormInstance>();
   const { data, run, loading } = useRequest(getProjects);
 
   const { data: users } = useRequest(getUsers);
@@ -136,6 +139,7 @@ const CardList = () => {
               <List.Item>
                 <ModalForm
                   width={480}
+                  formRef={createFormRef}
                   trigger={
                     <Button
                       type="dashed"
@@ -150,6 +154,7 @@ const CardList = () => {
                   onFinish={async (values: any) => {
                     const formData = new FormData();
                     formData.append('name', values.name);
+                    formData.append('token', values.token);
                     formData.append('desc', values.desc || '');
                     formData.append('logo', (values.logo && values.logo[0]?.thumbUrl) || '');
                     formData.append('owners', (values.owners || []).join(','));
@@ -172,6 +177,25 @@ const CardList = () => {
                     placeholder="请输入名称"
                     rules={[{ required: true, message: 'Please input project name!' }]}
                   />
+                  <ProForm.Item label="token" extra="Call open api need token to check auth.">
+                    <Row gutter={8}>
+                      <Col span={12}>
+                        <ProForm.Item name="token" noStyle>
+                          <Input disabled />
+                        </ProForm.Item>
+                      </Col>
+                      <Col span={12}>
+                        <Button
+                          type="primary"
+                          onClick={() => {
+                            createFormRef.current?.setFields([{ name: 'token', value: uuid2(10) }]);
+                          }}
+                        >
+                          gen token
+                        </Button>
+                      </Col>
+                    </Row>
+                  </ProForm.Item>
                   <ProFormTextArea
                     width="md"
                     name="desc"
@@ -209,6 +233,7 @@ const CardList = () => {
       </div>
       <ModalForm
         width={480}
+        formRef={updateFormRef}
         modalProps={{ destroyOnClose: true }}
         visible={updateVisible}
         onVisibleChange={setUpdateVisible}
@@ -216,6 +241,7 @@ const CardList = () => {
         onFinish={async (values: any) => {
           const formData = new FormData();
           formData.append('name', values.name);
+          formData.append('token', values.token);
           formData.append('desc', values.desc || '');
           formData.append('logo', values.logo[0]?.thumbUrl || '');
           formData.append('owners', (values.owners || []).join(','));
@@ -238,6 +264,25 @@ const CardList = () => {
           placeholder="请输入名称"
           rules={[{ required: true, message: 'Please input project name!' }]}
         />
+        <ProForm.Item label="token" extra="Call open api need token to check auth.">
+          <Row gutter={8}>
+            <Col span={12}>
+              <ProForm.Item name="token" noStyle>
+                <Input disabled />
+              </ProForm.Item>
+            </Col>
+            <Col span={12}>
+              <Button
+                type="primary"
+                onClick={() => {
+                  updateFormRef.current?.setFields([{ name: 'token', value: uuid2(10) }]);
+                }}
+              >
+                gen token
+              </Button>
+            </Col>
+          </Row>
+        </ProForm.Item>
         <ProFormTextArea width="md" name="desc" label="项目描述" placeholder="请输入描述" />
         <ProFormUploadButton
           name="logo"

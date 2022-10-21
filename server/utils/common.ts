@@ -60,3 +60,13 @@ export function projectRoleHandle(
     }
   }
 }
+
+export function base642Img(base64: string) {
+  return `data:image/png;base64,${base64}`;
+}
+
+export function replacePlaceholder(source: string, data: Record<string, any>) {
+  return Object.keys(data).reduce((current, key) => {
+    return current.replace(new RegExp('\\{\\w+\\}', 'g'), data[key]);
+  }, source);
+}

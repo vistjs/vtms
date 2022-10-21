@@ -11,7 +11,7 @@ export async function getCases(
   },
   options?: {
     lastRun?: Sorter;
-    updateAt?: Sorter;
+    updatedAt?: Sorter;
   },
 ) {
   return request<CaseList>('/api/v1/cases', {

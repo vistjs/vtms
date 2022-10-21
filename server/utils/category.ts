@@ -10,8 +10,8 @@ const copyCategory = (category: categoryItem) => ({
   title: category.title,
   parent: category.parent,
   project: category.project,
-  createAt: category.createAt,
-  updateAt: category.updateAt,
+  createdAt: category.createdAt,
+  updatedAt: category.updatedAt,
 });
 
 export const handleTree = function (categories: categoryItem[]) {

@@ -22,9 +22,10 @@ interface Case {
   status: CaseStatus;
   runs: number;
   lastRun: Date;
-  createAt?: Date;
-  updateAt?: Date;
+  createdAt?: Date;
+  updatedAt?: Date;
   lastOperator: Schema.Types.ObjectId;
+  noticeHook?: string;
 }
 
 const CaseSchema = new Schema<Case>(
@@ -70,7 +71,6 @@ const CaseSchema = new Schema<Case>(
     },
     runs: {
       type: Number,
-      required: true,
       default: 0,
     },
     lastRun: {
@@ -80,6 +80,9 @@ const CaseSchema = new Schema<Case>(
     lastOperator: {
       type: Schema.Types.ObjectId,
       ref: 'User',
+    },
+    noticeHook: {
+      type: String,
     },
   },
   { timestamps: true },

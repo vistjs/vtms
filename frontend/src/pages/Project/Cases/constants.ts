@@ -15,6 +15,7 @@ export type CaseListItem = {
   category: string;
   updatedAt: string;
   createdAt: string;
+  noticeHook?: string;
 };
 
 export type CaseList = {

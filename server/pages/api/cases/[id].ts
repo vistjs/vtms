@@ -5,7 +5,7 @@ import nextConnect from 'next-connect';
 import auth from '@/middleware/auth';
 import type { NextApiRequestWithContext } from '@/types/index';
 import { normalizeSuccess, normalizeError } from '@/utils/resHelper';
-import { projectRoleHandle } from '@/utils/dbHelper';
+import { projectRoleHandle } from '@/utils/common';
 
 const handler = nextConnect();
 
@@ -15,7 +15,7 @@ handler.put(async (req: NextApiRequestWithContext, res: NextApiResponse) => {
   try {
     const {
       query: { id },
-      body: { name, status, categoryId },
+      body: { name, status, categoryId, noticeHook },
     } = req;
 
     await conn();
@@ -36,6 +36,7 @@ handler.put(async (req: NextApiRequestWithContext, res: NextApiResponse) => {
       status,
       category: categoryId,
       lastOperator: req.user?._id,
+      noticeHook,
     });
 
     normalizeSuccess(res, { id });

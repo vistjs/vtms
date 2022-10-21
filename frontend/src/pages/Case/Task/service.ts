@@ -1,29 +1,21 @@
 import { request } from '@umijs/max';
-import { CaseList, categoryResult, Sorter } from './constants';
+import { CaseTask } from './types';
 
-interface Result {
-  name: string;
-  total: number;
-  passed?: number;
-  failed?: number;
-  createAt: string;
-  updateAt: string;
-}
-
-interface Task {
-  case: string;
-  results: {
-    [name: string]: Result;
-  };
-  createAt: string;
-  updateAt: string;
-}
-
-export async function getTasks(cid: string) {
-  return request<Task>('/api/v1/task', {
+export async function getTasks(cid?: string) {
+  return request<CaseTask>('/api/v1/tasks', {
     method: 'GET',
     params: {
       cid,
+    },
+  });
+}
+
+export async function coverMaster(cid?: string, branch?: string) {
+  return request<any>(`/api/v1/tasks/cover`, {
+    method: 'GET',
+    params: {
+      cid,
+      branch,
     },
   });
 }

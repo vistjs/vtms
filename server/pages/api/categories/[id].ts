@@ -6,7 +6,7 @@ import { getAllSubCategoryId } from '@/utils/category';
 import Case, { CaseStatus } from '@/models/case';
 import auth from '@/middleware/auth';
 import { normalizeSuccess, normalizeError } from '@/utils/resHelper';
-import { projectRoleHandle } from '@/utils/dbHelper';
+import { projectRoleHandle } from '@/utils/common';
 import { NextApiRequestWithContext } from '@/types';
 
 const handler = nextConnect();

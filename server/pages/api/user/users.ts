@@ -5,7 +5,7 @@ import conn from '@/utils/mongoose';
 import UserModel, { IUser, ResponseUser } from '@/models/user';
 import RoleModel, { IRole } from '@/models/role';
 import auth from '@/middleware/auth';
-import { addRoleNameToUser } from '@/utils/dbHelper';
+import { addRoleNameToUser } from '@/utils/common';
 import {
   normalizeSuccess,
   normalizeError,
