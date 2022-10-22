@@ -131,11 +131,15 @@ const Cases: React.FC = () => {
         },
         [caseStatus.ACTIVE]: {
           text: caseStatusText[caseStatus.ACTIVE],
-          status: 'Success',
+          status: 'Warning',
         },
         [caseStatus.RUNNING]: {
           text: caseStatusText[caseStatus.RUNNING],
           status: 'Processing',
+        },
+        [caseStatus.SUCCESS]: {
+          text: caseStatusText[caseStatus.SUCCESS],
+          status: 'Success',
         },
         [caseStatus.ERROR]: {
           text: caseStatusText[caseStatus.ERROR],

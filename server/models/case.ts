@@ -4,6 +4,7 @@ export enum CaseStatus {
   NOTACTIVE,
   ACTIVE,
   RUNNING,
+  SUCCESS,
   ERROR,
   DELETE,
 }

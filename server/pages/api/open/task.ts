@@ -51,7 +51,7 @@ interface RunResult {
 handler.get(async (req: NextApiRequest, res: NextApiResponse) => {
   try {
     const {
-      query: { pid, cid, commit, token },
+      query: { pid, cid, category: categoryId, commit, token },
     } = req;
 
     await conn();
@@ -67,7 +67,7 @@ handler.get(async (req: NextApiRequest, res: NextApiResponse) => {
     if (pid) {
       const project = await Project.findOne({
         seq: pid,
-      });
+      }).lean();
       if (!project) {
         throw new Error('project do not exist');
       } else if (token !== project.token) {
@@ -76,20 +76,20 @@ handler.get(async (req: NextApiRequest, res: NextApiResponse) => {
       caseInstances = await Case.find({
         project: project._id,
         status: {
-          $in: [CaseStatus.ACTIVE, CaseStatus.RUNNING, CaseStatus.ERROR],
+          $in: [CaseStatus.ACTIVE, CaseStatus.SUCCESS, CaseStatus.ERROR],
         },
       });
-    } else if (cid) {
+    } else if (categoryId) {
       const category = await Category.findOne({
-        _id: cid,
-      });
+        _id: categoryId,
+      }).lean();
       if (!category) {
         throw new Error('category do not exist');
       }
       caseInstances = await Case.find({
-        category: category._id,
+        category: categoryId,
         status: {
-          $in: [CaseStatus.ACTIVE, CaseStatus.RUNNING, CaseStatus.ERROR],
+          $in: [CaseStatus.ACTIVE, CaseStatus.SUCCESS, CaseStatus.ERROR],
         },
       });
     } else {
@@ -111,6 +111,8 @@ handler.get(async (req: NextApiRequest, res: NextApiResponse) => {
         const imageDatas = await runTask(steps, mocks, url, width, height);
         total = imageDatas.length;
         let task = await Task.findOne({ case: ins._id });
+        ins.status = CaseStatus.RUNNING;
+        await ins.save();
         if (!task) {
           task = new Task({
             case: ins._id,
@@ -171,6 +173,7 @@ handler.get(async (req: NextApiRequest, res: NextApiResponse) => {
 
         ins.runs += 1;
         ins.lastRun = new Date();
+        ins.status = CaseStatus.SUCCESS;
         await ins.save();
         if (noticeHook) {
           try {
@@ -195,6 +198,8 @@ handler.get(async (req: NextApiRequest, res: NextApiResponse) => {
           passed: total - failed,
         };
       } catch (err: any) {
+        ins.status = CaseStatus.ERROR;
+        await ins.save();
         if (noticeHook) {
           try {
             curl(

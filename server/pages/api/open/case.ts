@@ -55,14 +55,14 @@ handler.post(async (req: NextApiRequest, res: NextApiResponse) => {
     if (!token) {
       throw new Error('parameter error, need token');
     }
-    if (!steps || !pid || !width || !height) {
+    if (!steps || !pid || !url || !width || !height) {
       throw new Error('parameter validation failed');
     }
 
     await conn();
     const project = await Project.findOne({
       seq: pid,
-    });
+    }).lean();
     if (!project) {
       throw new Error('project does not exist');
     } else if (token !== project.token) {
@@ -85,59 +85,6 @@ handler.post(async (req: NextApiRequest, res: NextApiResponse) => {
   } catch (err: any) {
     console.log(err);
     normalizeError(res, err?.message);
-  }
-});
-
-handler.put(async (req: NextApiRequest, res: NextApiResponse) => {
-  try {
-    const {
-      query: { id, status },
-    } = req;
-
-    await conn();
-
-    const targetStatus = Number(status);
-    const caseInstance = await Case.findOne({
-      _id: id,
-    });
-
-    if (targetStatus === CaseStatus.ACTIVE) {
-      // 代表用例成功
-      if (caseInstance.status === CaseStatus.RUNNING) {
-        caseInstance.status = CaseStatus.ACTIVE;
-        await caseInstance.save();
-      } else {
-        throw new Error('only running status can convert to success');
-      }
-    }
-
-    if (targetStatus === CaseStatus.ERROR) {
-      // 代表用例失败
-      if (caseInstance.status === CaseStatus.RUNNING) {
-        caseInstance.status = CaseStatus.ERROR;
-        await caseInstance.save();
-      } else {
-        throw new Error('only running status can convert to error');
-      }
-    }
-
-    if (targetStatus === CaseStatus.RUNNING) {
-      // 代表用例执行中
-      if (
-        caseInstance.status === CaseStatus.ACTIVE ||
-        caseInstance.status === CaseStatus.ERROR
-      ) {
-        caseInstance.status = CaseStatus.ERROR;
-        await caseInstance.save();
-      } else {
-        throw new Error('only active or error status can convert to running');
-      }
-    }
-
-    normalizeSuccess(res, { case: caseInstance });
-  } catch (err: any) {
-    console.log(err);
-    normalizeError(res, err.message);
   }
 });
 

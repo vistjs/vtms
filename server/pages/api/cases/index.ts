@@ -74,6 +74,7 @@ handler.get(async (req: NextApiRequestWithContext, res: NextApiResponse) => {
             CaseStatus.ACTIVE,
             CaseStatus.NOTACTIVE,
             CaseStatus.RUNNING,
+            CaseStatus.SUCCESS,
             CaseStatus.ERROR,
           ],
         },
