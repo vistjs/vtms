@@ -1,6 +1,6 @@
 import type { NextApiResponse } from 'next';
 import HttpStatus from 'http-status-codes';
-import { ErrorCode, ErrorShowType } from '@/constant';
+import { ErrorCode, ErrorShowType } from '@/constants';
 
 export function handlePagination(
   page?: any,

@@ -7,6 +7,8 @@ import type { RunTimeLayoutConfig, RequestConfig } from '@umijs/max';
 import { history } from '@umijs/max';
 import defaultSettings from '../config/defaultSettings';
 import { currentUser as queryCurrentUser } from '@/pages/Auth/service';
+import { User } from '@/pages/Auth/types';
+
 import { loginPath, ErrorCode } from '@/constants';
 import { goLogin } from '@/utils';
 const isDev = process.env.NODE_ENV === 'development';
@@ -16,9 +18,9 @@ const isDev = process.env.NODE_ENV === 'development';
  * */
 export async function getInitialState(): Promise<{
   settings?: Partial<LayoutSettings>;
-  currentUser?: Auth.User;
+  currentUser?: User;
   loading?: boolean;
-  fetchUserInfo?: () => Promise<Auth.User | undefined>;
+  fetchUserInfo?: () => Promise<User | undefined>;
 }> {
   const fetchUserInfo = async () => {
     try {

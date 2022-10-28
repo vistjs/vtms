@@ -11,6 +11,7 @@ import {
 import { FormattedMessage, useModel } from '@umijs/max';
 import { Button, message, Modal, Form } from 'antd';
 import React, { useRef, useState } from 'react';
+import { User, AddUser, PageParams } from './types';
 
 const { confirm } = Modal;
 
@@ -20,7 +21,7 @@ const { confirm } = Modal;
  * @param fields
  */
 
-interface InputAddUser extends Omit<Auth.AddUser, 'isAdmin'> {
+interface InputAddUser extends Omit<AddUser, 'isAdmin'> {
   isAdmin: string[];
 }
 
@@ -43,7 +44,7 @@ const User: React.FC = () => {
    * */
   const [form] = Form.useForm();
 
-  const handleAdd = async (fields: Auth.AddUser) => {
+  const handleAdd = async (fields: AddUser) => {
     const hide = message.loading('正在添加');
     const { username, password, isAdmin } = fields;
     try {
@@ -57,7 +58,7 @@ const User: React.FC = () => {
     }
   };
 
-  const handleUpdate = async (fields: Auth.AddUser) => {
+  const handleUpdate = async (fields: AddUser) => {
     const hide = message.loading('正在更新');
     const { username, isAdmin, password } = fields;
     try {
@@ -71,7 +72,7 @@ const User: React.FC = () => {
     }
   };
 
-  const columns: ProColumns<Auth.User>[] = [
+  const columns: ProColumns<User>[] = [
     {
       title: '用户名',
       dataIndex: 'username',
@@ -153,7 +154,7 @@ const User: React.FC = () => {
 
   return (
     <PageContainer>
-      <ProTable<Auth.User, Auth.PageParams>
+      <ProTable<User, PageParams>
         actionRef={actionRef}
         rowKey="username"
         search={{

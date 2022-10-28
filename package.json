@@ -21,5 +21,9 @@
     "lint-staged": "^13.0.3",
     "prettier": "^2",
     "prettier-plugin-packagejson": "^2"
+  },
+  "engines": {
+    "node": ">=14",
+    "pnpm": ">=7"
   }
 }

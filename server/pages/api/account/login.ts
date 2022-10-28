@@ -5,7 +5,7 @@ import type { NextApiRequestWithContext } from '@/types';
 import auth, { sessionOpts } from '@/middleware/auth';
 import passport from '@/middleware/auth_utils/passport';
 import { createLoginSession } from '@/middleware/auth_utils/auth';
-import { ErrorCode } from '@/constant';
+import { ErrorCode } from '@/constants';
 import { normalizeSuccess, normalizeError } from '@/utils/resHelper';
 
 const handler = nextConnect();

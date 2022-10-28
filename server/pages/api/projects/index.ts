@@ -2,7 +2,7 @@ import type { NextApiRequest, NextApiResponse } from 'next';
 import conn from '@/utils/mongoose';
 import Project from '@/models/project';
 import nextConnect from 'next-connect';
-import { PROJECT_STATUS } from '@/constant';
+import { PROJECT_STATUS } from '@/constants';
 import { normalizeSuccess, normalizeError } from '@/utils/resHelper';
 
 const handler = nextConnect();

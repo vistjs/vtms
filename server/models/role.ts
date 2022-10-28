@@ -1,7 +1,7 @@
 import { Schema, models, model, Types } from 'mongoose';
 
 import conn from '@/utils/mongoose';
-import { ROLE_TYPE } from '@/constant';
+import { ROLE_TYPE } from '@/constants';
 
 export interface IRole {
   name: string;

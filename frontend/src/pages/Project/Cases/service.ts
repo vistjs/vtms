@@ -1,5 +1,5 @@
 import { request } from '@umijs/max';
-import { CaseList, categoryResult, Sorter } from './constants';
+import { CaseList, categoryResult, Sorter } from './types';
 
 export async function getCases(
   params: {

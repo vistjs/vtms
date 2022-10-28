@@ -1,5 +1,7 @@
 import React, { useRef } from 'react';
 import { getRoles } from '../service';
+import { Role as RoleType, PageParams } from '../types';
+
 import type { ActionType, ProColumns } from '@ant-design/pro-components';
 import { PageContainer, ProTable } from '@ant-design/pro-components';
 import { FormattedMessage } from '@umijs/max';
@@ -11,7 +13,7 @@ const postData = (data) => {
 const Role: React.FC = () => {
   const actionRef = useRef<ActionType>();
 
-  const columns: ProColumns<Auth.Role>[] = [
+  const columns: ProColumns<RoleType>[] = [
     {
       title: '角色',
       dataIndex: 'name',
@@ -26,7 +28,7 @@ const Role: React.FC = () => {
 
   return (
     <PageContainer>
-      <ProTable<Auth.Role, Auth.PageParams>
+      <ProTable<RoleType, PageParams>
         actionRef={actionRef}
         rowKey="_id"
         search={{

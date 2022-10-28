@@ -2,7 +2,7 @@ import React, { useCallback, useState, useMemo } from 'react';
 import { Form, message, Tooltip, Tree } from 'antd';
 import type { DirectoryTreeProps, DataNode } from 'antd/es/tree';
 import { DeleteOutlined, EditOutlined, PlusOutlined } from '@ant-design/icons';
-import { category } from '../../constants';
+import { category } from '../../types';
 import { addCategory, deleteCategory, updateCategory } from '../../service';
 import { ModalForm, ProFormText } from '@ant-design/pro-components';
 

@@ -1,7 +1,8 @@
+import { User } from '@/pages/Auth/types';
 /**
  * @see https://umijs.org/zh-CN/plugins/plugin-access
  * */
-export default function access(initialState: { currentUser?: Auth.User } | undefined) {
+export default function access(initialState: { currentUser?: User } | undefined) {
   const { currentUser } = initialState ?? {};
   return {
     canAdmin: (currentUser && currentUser?.isAdmin) || false,

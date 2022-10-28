@@ -1,7 +1,7 @@
 import type { NextApiResponse } from 'next';
 import conn from '@/utils/mongoose';
 import Project from '@/models/project';
-import { PROJECT_STATUS, ROLE_TYPE } from '@/constant';
+import { PROJECT_STATUS, ROLE_TYPE } from '@/constants';
 import { newProjectSeq } from '@/utils/common';
 import { HydratedDocument, Schema } from 'mongoose';
 import nextConnect from 'next-connect';

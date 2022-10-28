@@ -2,7 +2,7 @@ import Iron from '@hapi/iron';
 import crypto from 'crypto';
 // import { v4 as uuidv4 } from 'uuid';
 
-import { AUTH_ERROR } from '@/constant/index';
+import { AUTH_ERROR } from '@/constants';
 
 export async function createLoginSession(session, secret) {
   const createdAt = Date.now();

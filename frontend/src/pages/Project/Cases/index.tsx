@@ -24,7 +24,8 @@ import {
 import { useRequest, FormattedMessage, useParams, Link } from '@umijs/max';
 import { getCases, getCategories, deleteCase, updateCase } from './service';
 import { getProjects } from '@/pages/Project/List/service';
-import { CaseListItem, caseStatus, caseStatusText, category } from './constants';
+import { caseStatus, caseStatusText } from './constants';
+import { CaseListItem, category } from './types';
 import './index.less';
 import CaseSteps from './components/Steps';
 import CategoryTree from './components/CategoryTree';

@@ -2,12 +2,12 @@ import type { NextApiResponse } from 'next';
 import conn from '@/utils/mongoose';
 import Case, { CaseStatus } from '@/models/case';
 import nextConnect from 'next-connect';
-import { SORTER_ASC, SORTER_DES } from '@/constant/index';
+import { SORTER_ASC, SORTER_DES } from '@/constants';
 import Category from '@/models/category';
 import { getAllSubCategoryId } from '@/utils/category';
 import Project from '@/models/project';
 import auth from '@/middleware/auth';
-import type { NextApiRequestWithContext } from '@/types/index';
+import type { NextApiRequestWithContext } from '@/types';
 import {
   handlePagination,
   normalizeSuccess,

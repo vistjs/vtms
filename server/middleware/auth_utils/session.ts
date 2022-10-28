@@ -2,7 +2,7 @@ import { parse, serialize } from 'cookie';
 import HttpStatus from 'http-status-codes';
 
 import { createLoginSession, getLoginSession } from './auth';
-import { ErrorCode } from '@/constant';
+import { ErrorCode } from '@/constants';
 import { normalizeSuccess, normalizeError } from '@/utils/resHelper';
 
 function parseCookies(req) {

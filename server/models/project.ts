@@ -1,5 +1,5 @@
 import { Schema, models, model } from 'mongoose';
-import { PROJECT_STATUS } from '../constant';
+import { PROJECT_STATUS } from '../constants';
 
 export interface IProject {
   name: string;

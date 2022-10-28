@@ -7,6 +7,8 @@ import { Alert, message, Tabs } from 'antd';
 import React, { useState } from 'react';
 import styles from './index.less';
 import { loginPath } from '@/constants';
+import { LoginParams, LoginResult } from './types';
+
 const LoginMessage: React.FC<{
   content: string;
 }> = ({ content }) => {
@@ -23,7 +25,7 @@ const LoginMessage: React.FC<{
 };
 
 const Login: React.FC = () => {
-  const [userLoginState, setUserLoginState] = useState<Auth.LoginResult>({});
+  const [userLoginState, setUserLoginState] = useState<LoginResult>({});
   const [type, setType] = useState<string>('account');
   const { initialState, setInitialState } = useModel('@@initialState');
 
@@ -41,7 +43,7 @@ const Login: React.FC = () => {
     }
   };
 
-  const handleSubmit = async (values: Auth.LoginParams) => {
+  const handleSubmit = async (values: LoginParams) => {
     try {
       // 登录
       const msg = await login({ ...values, type }, { skipErrorHandler: true });
@@ -84,7 +86,7 @@ const Login: React.FC = () => {
             autoLogin: true,
           }}
           onFinish={async (values) => {
-            await handleSubmit(values as API.LoginParams);
+            await handleSubmit(values as LoginParams);
           }}
         >
           <Tabs activeKey={type} onChange={setType}>

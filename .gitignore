@@ -1,4 +1,4 @@
-**/node_modules
+node_modules
 
 
 # misc
@@ -32,6 +32,6 @@ package-lock.json
 
 .eslintcache
 
-tmp
+temp
 
 .env

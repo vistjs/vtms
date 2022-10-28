@@ -1,5 +1,5 @@
 import Sequence from '@/models/sequence';
-import { PROJECT_SQ, ErrorCode } from '@/constant';
+import { PROJECT_SQ, ErrorCode } from '@/constants';
 import { NextApiRequestWithContext } from '@/types';
 import { ResponseUser } from '@/models/user';
 import { IRole } from '@/models/role';

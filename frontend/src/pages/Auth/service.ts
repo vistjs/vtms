@@ -1,32 +1,14 @@
 import { request } from '@umijs/max';
+import { User, AddUser, Role } from './types';
 
 const API_PREFIX = '/api/v1';
+
 /** 获取当前的用户 GET /api/currentUser */
 export async function currentUser(options?: { [key: string]: any }) {
   return request<{
-    data: Auth.User;
+    data: User;
   }>('/api/v1/user/current', {
     method: 'GET',
-    ...(options || {}),
-  });
-}
-
-/** 退出登录接口 */
-export async function outLogin(options?: { [key: string]: any }) {
-  return request<Record<string, any>>('/api/v1/account/logout', {
-    method: 'POST',
-    ...(options || {}),
-  });
-}
-
-/** 登录接口 */
-export async function login(body: Auth.LoginParams, options?: { [key: string]: any }) {
-  return request<Auth.LoginResult>('/api/v1/account/login', {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-    },
-    data: body,
     ...(options || {}),
   });
 }
@@ -43,7 +25,7 @@ export async function getUsersApi(
   },
   options?: { [key: string]: any },
 ) {
-  return request<Auth.User>(`${API_PREFIX}/user/users`, {
+  return request<User>(`${API_PREFIX}/user/users`, {
     method: 'GET',
     params: {
       ...params,
@@ -54,7 +36,7 @@ export async function getUsersApi(
 
 /**增加用户 */
 export async function addUser(data: { [key: string]: any }) {
-  return request<Auth.AddUser>('/api/v1/user/create', {
+  return request<AddUser>('/api/v1/user/create', {
     method: 'POST',
     data,
   });
@@ -62,14 +44,14 @@ export async function addUser(data: { [key: string]: any }) {
 
 /**删除用户 */
 export async function deleteUser(data: { [key: string]: any }) {
-  return request<Auth.User>('/api/v1/user/delete', {
+  return request<User>('/api/v1/user/delete', {
     method: 'DELETE',
     data,
   });
 }
 
 export async function updateUser(data: { [key: string]: any }) {
-  return request<Auth.User>('/api/v1/user/update', {
+  return request<User>('/api/v1/user/update', {
     method: 'PUT',
     data,
   });
@@ -86,7 +68,7 @@ export async function getRoles(
   },
   options?: { [key: string]: any },
 ) {
-  return request<Auth.Role>(`${API_PREFIX}/roles`, {
+  return request<Role>(`${API_PREFIX}/roles`, {
     method: 'GET',
     params: {
       ...params,
