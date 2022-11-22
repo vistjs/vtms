@@ -8,12 +8,19 @@ export async function runTask(
   width: number,
   height: number,
 ) {
-  const findChromePath = await findChrome({});
+  let browser;
+  if (process.env.BROWSER_WS) {
+    browser = await puppeteer.connect({
+      browserWSEndpoint: process.env.BROWSER_WS,
+    });
+  } else {
+    const findChromePath = await findChrome({});
+    browser = await puppeteer.launch({
+      executablePath: findChromePath.executablePath,
+      headless: true,
+    });
+  }
 
-  const browser = await puppeteer.launch({
-    executablePath: findChromePath.executablePath,
-    headless: true,
-  });
   const page = await browser.newPage();
   page.setViewport({
     width,
@@ -38,9 +45,7 @@ export async function runTask(
   await page.exposeFunction('rtFetchRecords', () => {
     return [steps, mocks];
   });
-
   await page.goto(`${url}`);
-
   await finishReplayP;
   await browser.close();
   return imgs;

@@ -1,7 +1,7 @@
 {
   "private": true,
   "author": "letshare",
-  "license": "MIT",
+  "license": "Apache-2.0",
   "scripts": {
     "dev": "pnpm run dev -r --parallel",
     "init-db": "node server/scripts/init-users.mjs",

@@ -137,6 +137,7 @@ handler.get(async (req: NextApiRequest, res: NextApiResponse) => {
             total,
           };
         }
+
         const references = task.results.master.screenshots.map(
           ({ test }: any) => test,
         );

@@ -2,7 +2,7 @@ import { request } from '@umijs/max';
 import { LoginParams, LoginResult } from './types';
 /** 退出登录接口 */
 export async function logout(options?: { [key: string]: any }) {
-  return request<Record<string, any>>('/api/v1/account/logout', {
+  return request<Record<string, any>>('/api/account/logout', {
     method: 'POST',
     ...(options || {}),
   });
@@ -10,7 +10,7 @@ export async function logout(options?: { [key: string]: any }) {
 
 /** 登录接口 */
 export async function login(body: LoginParams, options?: { [key: string]: any }) {
-  return request<LoginResult>('/api/v1/account/login', {
+  return request<LoginResult>('/api/account/login', {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',

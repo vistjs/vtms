@@ -2,7 +2,7 @@ import { request } from '@umijs/max';
 import { CaseTask } from './types';
 
 export async function getTasks(cid?: string) {
-  return request<CaseTask>('/api/v1/tasks', {
+  return request<CaseTask>('/api/tasks', {
     method: 'GET',
     params: {
       cid,
@@ -11,7 +11,7 @@ export async function getTasks(cid?: string) {
 }
 
 export async function coverMaster(cid?: string, branch?: string) {
-  return request<any>(`/api/v1/tasks/cover`, {
+  return request<any>(`/api/tasks/cover`, {
     method: 'GET',
     params: {
       cid,

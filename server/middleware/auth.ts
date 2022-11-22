@@ -5,8 +5,8 @@ import passport from './auth_utils/passport';
 import session from './auth_utils/session';
 
 export const sessionOpts = {
-  name: 'codeless-sso',
-  secret: 'token_secret_1#token_secret_2#codeless',
+  name: 'vtms-sso',
+  secret: 'token_secret_1#token_secret_2#vtms',
   cookie: {
     maxAge: 60 * 60 * 8, // 8 hours,
     httpOnly: true,

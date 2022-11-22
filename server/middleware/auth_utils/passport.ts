@@ -15,8 +15,8 @@ passport.serializeUser(function (user, done) {
 
 passport.deserializeUser(async function (req, username, done) {
   // deserialize the username back into user object
-  const [connect, rawUser, roles] = await Promise.all([
-    conn(),
+  await conn();
+  const [rawUser, roles] = await Promise.all([
     UserModel.findOne({ username }).exec(),
     RoleModel.find().lean(),
   ]);

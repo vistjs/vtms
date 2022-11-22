@@ -2,16 +2,13 @@
 const nextConfig = {
   reactStrictMode: true,
   swcMinify: true,
-  // async rewrites() {
-  //   return {
-  //     fallback: [
-  //       {
-  //         source: '/:path*',
-  //         destination: `http://localhost:8000/:path*`,
-  //       },
-  //     ],
-  //   };
-  // },
+  typescript: {
+    // !! WARN !!
+    // Dangerously allow production builds to successfully complete even if
+    // your project has type errors.
+    // !! WARN !!
+    ignoreBuildErrors: true,
+  },
 };
 
 module.exports = nextConfig;

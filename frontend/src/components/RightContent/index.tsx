@@ -26,7 +26,7 @@ const GlobalHeaderRight: React.FC = () => {
       <span
         className={styles.action}
         onClick={() => {
-          window.open('https://github.com/test-gui/CodelessTC');
+          window.open('https://github.com/vistjs/vtms');
         }}
       >
         <QuestionCircleOutlined />

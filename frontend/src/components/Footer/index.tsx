@@ -6,7 +6,7 @@ const Footer: React.FC = () => {
   const intl = useIntl();
   const defaultMessage = intl.formatMessage({
     id: 'app.copyright.produced',
-    defaultMessage: 'test GUI出品',
+    defaultMessage: 'Vist出品',
   });
 
   const currentYear = new Date().getFullYear();
@@ -21,7 +21,7 @@ const Footer: React.FC = () => {
         {
           key: 'github',
           title: <GithubOutlined />,
-          href: 'https://github.com/test-gui/CodelessTC',
+          href: 'https://github.com/vistjs/vtms',
           blankTarget: true,
         },
       ]}

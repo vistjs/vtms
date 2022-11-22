@@ -11,7 +11,7 @@ import {
 import { FormattedMessage, useModel } from '@umijs/max';
 import { Button, message, Modal, Form } from 'antd';
 import React, { useRef, useState } from 'react';
-import { User, AddUser, PageParams } from './types';
+import { User, AddUser, PageParams } from '../types';
 
 const { confirm } = Modal;
 
@@ -25,13 +25,13 @@ interface InputAddUser extends Omit<AddUser, 'isAdmin'> {
   isAdmin: string[];
 }
 
-const postData = (data) => {
+const postData = (data: any) => {
   return data?.list;
 };
 
 const PasswordReg = /^[\w-!?$%@*&]{5,}$/;
 
-const User: React.FC = () => {
+const UserPage: React.FC = () => {
   const [createModalVisible, setCreateModalVisible] = useState<boolean>(false);
   const [updateModalVisible, setUpdateModalVisible] = useState<boolean>(false);
 
@@ -283,4 +283,4 @@ const User: React.FC = () => {
   );
 };
 
-export default User;
+export default UserPage;

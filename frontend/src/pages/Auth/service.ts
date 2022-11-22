@@ -1,13 +1,13 @@
 import { request } from '@umijs/max';
 import { User, AddUser, Role } from './types';
 
-const API_PREFIX = '/api/v1';
+const API_PREFIX = '/api';
 
 /** 获取当前的用户 GET /api/currentUser */
 export async function currentUser(options?: { [key: string]: any }) {
   return request<{
     data: User;
-  }>('/api/v1/user/current', {
+  }>('/api/user/current', {
     method: 'GET',
     ...(options || {}),
   });
@@ -36,7 +36,7 @@ export async function getUsersApi(
 
 /**增加用户 */
 export async function addUser(data: { [key: string]: any }) {
-  return request<AddUser>('/api/v1/user/create', {
+  return request<AddUser>('/api/user/create', {
     method: 'POST',
     data,
   });
@@ -44,14 +44,14 @@ export async function addUser(data: { [key: string]: any }) {
 
 /**删除用户 */
 export async function deleteUser(data: { [key: string]: any }) {
-  return request<User>('/api/v1/user/delete', {
+  return request<User>('/api/user/delete', {
     method: 'DELETE',
     data,
   });
 }
 
 export async function updateUser(data: { [key: string]: any }) {
-  return request<User>('/api/v1/user/update', {
+  return request<User>('/api/user/update', {
     method: 'PUT',
     data,
   });

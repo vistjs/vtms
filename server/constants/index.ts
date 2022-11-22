@@ -1,4 +1,4 @@
-export const TC_MONGODB_DBNAME = 'codeless_tc';
+export const TC_MONGODB_DBNAME = 'vtms';
 
 export enum PROJECT_STATUS {
   enable = 1,
